@@ -1,0 +1,628 @@
+Var. Question     Variable  Variable Label                           Code      Option                                 Location/Format 
+No.               Name                                                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+   1 COUNTRY      IDCNTRY   *COUNTRY ID*                                                                               1-    3/N  3.0 
+--------------------------------------------------------------------------------------------------------------------------------------
+   2 COUNTRY      COUNTRY   *ALPHABETIC COUNTRY ID*                                                                    4-    6/C  3.0 
+--------------------------------------------------------------------------------------------------------------------------------------
+   3 POPULATION   IDPOP     *POPULATION ID*                                                                            7      /N  1.0 
+--------------------------------------------------------------------------------------------------------------------------------------
+   4 STRATUM      IDSTRAT   *STRATUM ID*                                                                               8-   11/N  4.0 
+--------------------------------------------------------------------------------------------------------------------------------------
+   5 SCHOOL       IDSCHOOL  *SCHOOL ID*                                                                               12-   17/N  6.0 
+--------------------------------------------------------------------------------------------------------------------------------------
+   6 ITPARTC      ITPARTC   *SCHOOL PARTICIPATION *                                                                   18      /C  1.0 
+                                                                           0   SAMPLED SCHOOL DID NOT PART                            
+                                                                           1   1st REPLACEMENT SCHOOL PARTICIP                        
+                                                                           2   2nd REPLACEMENT SCHOOL PARTICIP                        
+                                                                           3   ORIGINAL SCHOOL PARTICIPATED                           
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+   7 SCQ2-1A      BCYPRINC  HOW MANY YEARS BEEN A PRINCIPAL CAREER                                                    19-   20/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+   8 SCQ2-1B      BCYPRINS  HOW MANY YEARS BEEN PRINC. PRESENT SCH.                                                   21-   22/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+   9 SCQ2-2       BCCIVTEA  CLASS TEACHERS COVER CIVIC-RELATED SUBJ.                                                  23      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  10 SCQ2-3       BCTEASPE  TEACHERS SPECIALIZE IN CIVIC-REL. SUBJ.                                                   24      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  11 SCQ2-4A      BCPARTPR  SCHOOL PARTICIPATING IN SPECIAL PROGRAMS                                                  25      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  12 SCQ2-4B1     BCPROGR1  PROGRAMS/PROJECTS SCHOOL PARTICIP. (#1)                                                   26-   27/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  13 SCQ2-4B2     BCPROGR2  PROGRAMS/PROJECTS SCHOOL PARTICIP. (#2)                                                   28-   29/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  14 SCQ2-4B3     BCPROGR3  PROGRAMS/PROJECTS SCHOOL PARTICIP. (#3)                                                   30-   31/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  15 SCQ2-4B4     BCPROGR4  PROGRAMS/PROJECTS SCHOOL PARTICIP. (#4)                                                   32-   33/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  16 SCQ2-4B5     BCPROGR5  PROGRAMS/PROJECTS SCHOOL PARTICIP. (#5)                                                   34-   35/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  17 SCQ2-4B6     BCPROGR6  PROGRAMS/PROJECTS SCHOOL PARTICIP. (#6)                                                   36-   37/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  18 SCQ2-4B7     BCPROGR7  PROGRAMS/PROJECTS SCHOOL PARTICIP. (#7)                                                   38-   39/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  19 SCQ2-5A      BCSCOUNC  COUNCIL/STUDENT GOVERNMENT                                                                40      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  20 SCQ2-5B      BCYORGAF  YOUTH ORGANISATION AFFILIATED WITH PARTY                                                  41      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  21 SCQ2-5C      BCSNEWSP  GROUP WHICH PREPARES SCHOOL NEWSPAPER                                                     42      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  22 SCQ2-5D      BCENVIRN  AN ENVIRONMENTAL ORGANIZATION                                                             43      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  23 SCQ2-5E      BCUNESCO  A.U.N. OR UNESCO CLUB                                                                     44      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  24 SCQ2-5F      BCSTEXCH  STUDENT EXCHANGE OR SCHOOL PARTNERSHIP                                                    45      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  25 SCQ2-5G      BCHUMANR  HUMAN RIGHTS ORGANISATION                                                                 46      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  26 SCQ2-5H      BCACTIVI  ACTIVITIES TO HELP THE COMMUNITY                                                          47      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  27 SCQ2-5I      BCCHARIT  CHARITY COLLECTING MONEY FOR SOCIAL C.                                                    48      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  28 SCQ2-5J      BCSCOUTS  BOY OR GIRL SCOUTS                                                                        49      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  29 SCQ2-5K      BCASSOCI  CULTURAL ASSOCIATION BASED ON ETHNICITY                                                   50      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  30 SCQ2-5L      BCCOMPCL  COMPUTER CLUB                                                                             51      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  31 SCQ2-5M      BCAMDORG  ART, MUSIC OR DRAMA ORGANIZATION                                                          52      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  32 SCQ2-5N      BCSPORTS  A SPORTS ORGANISATION OR TEAM                                                             53      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  33 SCQ2-5O      BCRELIGS  ORGANISATION SPONSORED BY RELIG. GROUP                                                    54      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  34 SCQ2-6A      BCSUBJCT  SHOULD BE TAUGHT AS SPECIFIC SUBJECT                                                      55      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  35 SCQ2-6B      BCINTEGR  SHOULD BE TAUGHT INTEGRATED INTO SUBJECT                                                  56      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  36 SCQ2-6C      BCINTEGS  SHOULD BE INTEGRATED INTO ALL SUBJECTS                                                    57      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  37 SCQ2-6D      BCEXTRAA  SHOULD BE AN EXTRA-CURRICULAR ACTIVITY                                                    58      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  38 SCQ2-7A      BCUNDERS  STUDENTS LEARN TO UNDERSTAND PEOPLE                                                       59      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  39 SCQ2-7B      BCCOOPER  STUDENTS LEARN TO COOPERATE                                                               60      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  40 SCQ2-7C      BCCONTRI  STUDENTS LEARN TO CONTRIBUTE SOLVE PROBL                                                  61      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  41 SCQ2-7D      BCPATRIO  STUDENTS LEARN TO BE PATRIOTIC AND LOYAL                                                  62      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  42 SCQ2-7E      BCENVRNM  STUDENTS LEARN TO PROTECT ENVIRONMENT                                                     63      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  43 SCQ2-7F      BCCONCRN  STUDENTS LEARN TO BE CONCERNED AB. CNTRS                                                  64      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  44 SCQ2-7G      BCVOTING  STUDENTS LEARN AB. IMPORTANCE OF VOTING                                                   65      /C  1.0 
+                                                                           1   STRONGLY DISAGREE                                      
+                                                                           2   DISAGREE                                               
+                                                                           3   AGREE                                                  
+                                                                           4   STRONGLY AGREE                                         
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  45 SCQ2-8A      BCLEARNP  NOTIFY SCHOOL ABOUT LEARNING PROBLEMS                                                     66      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  46 SCQ2-8B      BCHOMEWK  MAKE SURE CHILD COMPLETES HOMEWORK                                                        67      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  47 SCQ2-8C      BCFUNDR   RAISE FUNDS OTHER THAN TUITION FEES                                                       68      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  48 SCQ2-9A      BCSOCIO1  SOCIOECONOMIC BACKGROUND/BELOW AVERAGE                                                    69-   71/N  3.0 
+                                                                         998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  49 SCQ2-9B      BCSOCIO2  SOCIOECONOMIC BACKGROUND/CLOSE TO AVRGE                                                   72-   74/N  3.0 
+                                                                         998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  50 SCQ2-9C      BCSOCIO3  SOCIOECONOMIC BACKGROUND/ABOVE AVERAGE                                                    75-   77/N  3.0 
+                                                                         998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  51 SCQ2-10A1    BCENROL1  IN TARGET GRADE / BOYS                                                                    78-   81/N  4.0 
+                                                                        9998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  52 SCQ2-10A2    BCENROL2  IN TARGET GRADE / GIRLS                                                                   82-   85/N  4.0 
+                                                                        9998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  53 SCQ2-10B1    BCENROL3  IN SCHOOL / BOYS                                                                          86-   89/N  4.0 
+                                                                        9998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  54 SCQ2-10B2    BCENROL4  IN SCHOOL / GIRLS                                                                         90-   93/N  4.0 
+                                                                        9998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  55 SCQ2-10C     BCENROL5  AVERAGE SIZE OF CLASS IN TARGET GRADE                                                     94-   95/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  56 SCQ2-10D     BCENROL6  AVERAGE SIZE OF CLASS IN SCHOOL                                                           96-   97/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  57 SCQ2-11      BCYOURSC  IS YOUR  SCHOOL STATE/PRIVATE                                                             98      /C  1.0 
+                                                                           1   A STATE SCHOOL                                         
+                                                                           2   A PRIVATE SCHOOL                                       
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  58 SCQ2-12A     BCVANDAL  HOW FREQUENTLY OCCURS / VANDALISM                                                         99      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  59 SCQ2-12B     BCDRUGS   HOW FREQUENTLY OCCURS / DRUGS                                                            100      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  60 SCQ2-12C     BCTRUANC  HOW FREQUENTLY OCCURS / TRUANCY                                                          101      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  61 SCQ2-12D     BCRACISM  HOW FREQUENTLY OCCURS / RACISM                                                           102      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  62 SCQ2-12E     BCRELIGI  HOW FREQUENTLY OCCURS / RELIGIOUS INTOL.                                                 103      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  63 SCQ2-12F     BCALCOHL  HOW FREQUENTLY OCCURS / ALCOHL                                                           104      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  64 SCQ2-12G     BCBULLYI  HOW FREQUENTLY OCCURS / BULLYING                                                         105      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  65 SCQ2-12H     BCVIOLEN  HOW FREQUENTLY OCCURS / VIOLENCE                                                         106      /C  1.0 
+                                                                           1   NEVER                                                  
+                                                                           2   SOMETIMES                                              
+                                                                           3   OFTEN                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  66 SCQ2-13      BCADMITT  HOW ARE STUDENTS ADMITTED                                                                107      /C  1.0 
+                                                                           1   THEY ARE ASSIGNED                                      
+                                                                           2   THEY HAVE CHOICE                                       
+                                                                           3   OTHER                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  67 SCQ2-13SP    BCADMITO  HOW ARE STUDENTS ADMITTED (OTHER)                                                        108-  109/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  68 SCQ2-14A     BCWEEKSY  HOW MANY INSTRUCTIONAL WEEKS IN YEAR                                                     110-  111/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  69 SCQ2-14B     BCPERIOD  HOW MANY CLASS PERIODS IN SCHOOL WEEK                                                    112-  113/N  2.0 
+                                                                          98   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  70 SCQ2-14C     BCMINUTE  HOW MANY INSTRUCTIONAL MINUTES IN PERIOD                                                 114-  116/N  3.0 
+                                                                         998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  71 SCQ2-15A     BCPREKIN  GRADE LEVELS / PRE-KINDERGARTEN                                                          117      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  72 SCQ2-15B     BCKINDER  GRADE LEVELS / KINDERGARTEN                                                              118      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  73 SCQ2-15C     BCGRAD1   GRADE LEVELS / GRADE 1                                                                   119      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  74 SCQ2-15D     BCGRAD2   GRADE LEVELS / GRADE 2                                                                   120      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  75 SCQ2-15E     BCGRAD3   GRADE LEVELS / GRADE 3                                                                   121      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  76 SCQ2-15F     BCGRAD4   GRADE LEVELS / GRADE 4                                                                   122      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  77 SCQ2-15G     BCGRAD5   GRADE LEVELS / GRADE 5                                                                   123      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  78 SCQ2-15H     BCGRAD6   GRADE LEVELS / GRADE 6                                                                   124      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  79 SCQ2-15I     BCGRAD7   GRADE LEVELS / GRADE 7                                                                   125      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  80 SCQ2-15J     BCGRAD8   GRADE LEVELS / GRADE 8                                                                   126      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  81 SCQ2-15K     BCGRAD9   GRADE LEVELS / GRADE 9                                                                   127      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  82 SCQ2-15L     BCGRAD10  GRADE LEVELS / GRADE 10                                                                  128      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  83 SCQ2-15M     BCGRAD11  GRADE LEVELS / GRADE 11                                                                  129      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  84 SCQ2-15N     BCGRAD12  GRADE LEVELS / GRADE 12                                                                  130      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  85 SCQ2-15O     BCGRAD13  GRADE LEVELS / GRADE 13                                                                  131      /C  1.0 
+                                                                           1   NO                                                     
+                                                                           2   YES                                                    
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  86 SCQ2-16A     BCTFTEM   MALE FULL-TIME TEACHERS                                                                  132-  134/N  3.0 
+                                                                         998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  87 SCQ2-16B     BCTFTEF   FEMALE FULL-TIME TEACHERS                                                                135-  137/N  3.0 
+                                                                         998   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  88 SCQ2-17A1    BCHRHISP  HOURS STDNTS REQUIRED/HISTORY/PREV GRADE                                                 138      /C  1.0 
+                                                                           1   LESS THAN ONE HOUR                                     
+                                                                           2   ONE TO TWO HOURS                                       
+                                                                           3   THREE TO FOUR HOURS                                    
+                                                                           4   FIVE TO SIX HOURS                                      
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  89 SCQ2-17A2    BCHRHIST  HOURS STDNTS REQUIRED/HISTORY/TARG GRADE                                                 139      /C  1.0 
+                                                                           1   LESS THAN ONE HOUR                                     
+                                                                           2   ONE TO TWO HOURS                                       
+                                                                           3   THREE TO FOUR HOURS                                    
+                                                                           4   FIVE TO SIX HOURS                                      
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  90 SCQ2-17B1    BCHRSOCP  HOURS STDNTS REQUIRED/SOCIAL/PREV GRADE                                                  140      /C  1.0 
+                                                                           1   LESS THAN ONE HOUR                                     
+                                                                           2   ONE TO TWO HOURS                                       
+                                                                           3   THREE TO FOUR HOURS                                    
+                                                                           4   FIVE TO SIX HOURS                                      
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  91 SCQ2-17B2    BCHRSOCT  HOURS STDNTS REQUIRED/SOCIAL/TARG GRADE                                                  141      /C  1.0 
+                                                                           1   LESS THAN ONE HOUR                                     
+                                                                           2   ONE TO TWO HOURS                                       
+                                                                           3   THREE TO FOUR HOURS                                    
+                                                                           4   FIVE TO SIX HOURS                                      
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  92 SCQ2-17C1    BCHRLAWP  HOURS STDNTS REQUIRED/LAW/PREV GRADE                                                     142      /C  1.0 
+                                                                           1   LESS THAN ONE HOUR                                     
+                                                                           2   ONE TO TWO HOURS                                       
+                                                                           3   THREE TO FOUR HOURS                                    
+                                                                           4   FIVE TO SIX HOURS                                      
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  93 SCQ2-17C2    BCHRLAWT  HOURS STDNTS REQUIRED/LAW/TARG GRADE                                                     143      /C  1.0 
+                                                                           1   LESS THAN ONE HOUR                                     
+                                                                           2   ONE TO TWO HOURS                                       
+                                                                           3   THREE TO FOUR HOURS                                    
+                                                                           4   FIVE TO SIX HOURS                                      
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  94 SCQ2-18A     BCINSMAT  SCHOOL AFFECTED BY / INSTRUCT. MATERIAL                                                  144      /C  1.0 
+                                                                           1   NOT AT ALL                                             
+                                                                           2   A LITTLE                                               
+                                                                           3   SOME                                                   
+                                                                           4   A LOT                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  95 SCQ2-18B     BCSBUILD  SCHOOL AFFECTED BY / SCHOOL BUILDINGS                                                    145      /C  1.0 
+                                                                           1   NOT AT ALL                                             
+                                                                           2   A LITTLE                                               
+                                                                           3   SOME                                                   
+                                                                           4   A LOT                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  96 SCQ2-18C     BCLIBRAR  SCHOOL AFFECTED BY / LIBRARY INFRASTRUCT                                                 146      /C  1.0 
+                                                                           1   NOT AT ALL                                             
+                                                                           2   A LITTLE                                               
+                                                                           3   SOME                                                   
+                                                                           4   A LOT                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  97 SCQ2-18D     BCTTRAIN  SCHOOL AFFECTED BY / TEACHER TRAINED SPC                                                 147      /C  1.0 
+                                                                           1   NOT AT ALL                                             
+                                                                           2   A LITTLE                                               
+                                                                           3   SOME                                                   
+                                                                           4   A LOT                                                  
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  98 SCQ2-19A     BCSTDATA  CHARACTERIZE/STUDENTS' ATTITUDE/ACAD ACH                                                 148      /C  1.0 
+                                                                           1   VERY NEGATIVE                                          
+                                                                           2   SOMEWHAT NEGATIVE                                      
+                                                                           3   SOMEWHAT POSITIVE                                      
+                                                                           4   VERY POSITIVE                                          
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+  99 SCQ2-19B     BCSTDATS  CHARACTERIZE/STUDENTS' ATTITUDE/SCHOOL                                                   149      /C  1.0 
+                                                                           1   VERY NEGATIVE                                          
+                                                                           2   SOMEWHAT NEGATIVE                                      
+                                                                           3   SOMEWHAT POSITIVE                                      
+                                                                           4   VERY POSITIVE                                          
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ 100 SCQ2-19C     BCTEACOM  CHARACTERIZE/TEACHERS' COMMITMENT                                                        150      /C  1.0 
+                                                                           1   VERY NEGATIVE                                          
+                                                                           2   SOMEWHAT NEGATIVE                                      
+                                                                           3   SOMEWHAT POSITIVE                                      
+                                                                           4   VERY POSITIVE                                          
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ 101 SCQ2-19D     BCPARSUP  CHARACTERIZE/PARENTAL SUPPORT                                                            151      /C  1.0 
+                                                                           1   VERY NEGATIVE                                          
+                                                                           2   SOMEWHAT NEGATIVE                                      
+                                                                           3   SOMEWHAT POSITIVE                                      
+                                                                           4   VERY POSITIVE                                          
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ 102 SCQ2-19E     BCSTDRES  CHARACTERIZE/STD RESPECT FOR SCH PROPERT                                                 152      /C  1.0 
+                                                                           1   VERY NEGATIVE                                          
+                                                                           2   SOMEWHAT NEGATIVE                                      
+                                                                           3   SOMEWHAT POSITIVE                                      
+                                                                           4   VERY POSITIVE                                          
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ 103 SCQ2-19F     BCRELATN  CHARACTERIZE/RELATIONS BETW STD AND TEAC                                                 153      /C  1.0 
+                                                                           1   VERY NEGATIVE                                          
+                                                                           2   SOMEWHAT NEGATIVE                                      
+                                                                           3   SOMEWHAT POSITIVE                                      
+                                                                           4   VERY POSITIVE                                          
+                                                                           8   not admin.                                             
+                                                                           .   missing                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ 104 WEIGHT       SCHWGT    *SCHOOL WEIGHT*                                                                          154-  167/N 14.6 
+--------------------------------------------------------------------------------------------------------------------------------------
+ 105 WEIGHT       STDWGT    *SUM OF STUDENT WEIGHTS*                                                                 168-  181/N 14.6 
+--------------------------------------------------------------------------------------------------------------------------------------
+ 106 DPCDATE      DPCDATE   DPC DATE OF DATABASE CREATION                                                            182-  187/N  6.0 
+--------------------------------------------------------------------------------------------------------------------------------------
+ 107 VERSION      VERSION   VERSION OF DATABASE                                                                      188-  189/N  2.0 

@@ -1,0 +1,4 @@
+study,reference_file,candidate_file,nrow_reference,nrow_candidate,ncol_reference,ncol_candidate,rows_equal_count,cols_equal_count,columns_identical_order,columns_same_set,values_equal,exact_match
+cived_1999,2022_INVALSI/subset_CIVED_1999.dta,proc/output/cived_1999_processed.rds,93882,93882,17,21,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE
+iccs_2009,2022_INVALSI/subset_ICCS_2009.dta,proc/output/iccs_2009_processed.rds,140650,140650,17,21,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE
+iccs_2016,2022_INVALSI/subset_ICCS_2016.dta,proc/output/iccs_2016_processed.rds,94603,94603,17,21,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE

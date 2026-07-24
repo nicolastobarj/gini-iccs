@@ -1,0 +1,16 @@
+study,side,column
+cived_1999,r_only,year
+cived_1999,r_only,country_yr
+cived_1999,r_only,country_year_num
+cived_1999,r_only,pacific
+iccs_2009,r_only,year
+iccs_2009,r_only,country_yr
+iccs_2009,r_only,country_year_num
+iccs_2009,r_only,pacific
+iccs_2016,r_only,year
+iccs_2016,r_only,country_yr
+iccs_2016,r_only,country_year_num
+iccs_2016,r_only,pacific
+cived_1999,stata_only,NA
+iccs_2009,stata_only,NA
+iccs_2016,stata_only,NA

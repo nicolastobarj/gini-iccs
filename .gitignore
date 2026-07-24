@@ -1,0 +1,8 @@
+# Local IDE/session files
+.Rproj.user/
+.DS_Store
+
+# Exclude oversized installer assets (cannot be pushed to GitHub)
+2022_INVALSI/IEA_IDBAnalyzer_Setup_v5.0.12.msi
+2022_INVALSI/IEA_IDBAnalyzer_Setup_v5.0-1.12/
+2022_INVALSI/IEA_IDBAnalyzer_Setup_v5.0.12/
