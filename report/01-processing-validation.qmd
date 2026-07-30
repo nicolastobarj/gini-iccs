@@ -1,0 +1,326 @@
+---
+title: "Processing Validation Report"
+author: "Data Processing Pipeline"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+  error: true
+---
+
+## Objective
+
+This report validates the final pooled processing output at student level.
+
+## Load Data
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+library(purrr)
+library(knitr)
+
+resolve_pooled_path <- function() {
+  candidates <- c(
+    "proc/output/pooled_data.rds",
+    "output/pooled_data.rds",
+    "../proc/output/pooled_data.rds",
+    "../../proc/output/pooled_data.rds"
+  )
+
+  hits <- candidates[file.exists(candidates)]
+  if (length(hits) == 0) {
+    stop(
+      "pooled_data.rds not found. Tried: ",
+      paste(candidates, collapse = ", ")
+    )
+  }
+
+  normalizePath(hits[1], winslash = "/", mustWork = TRUE)
+}
+
+pooled_path <- resolve_pooled_path()
+db <- readRDS(pooled_path)
+
+if (!"study" %in% names(db)) {
+  stop("Column 'study' is required in pooled_data.rds for this validation report.")
+}
+
+if (!"label_country" %in% names(db)) {
+  stop("Column 'label_country' is required in pooled_data.rds for this validation report.")
+}
+
+# Ensure expected types for reporting.
+db <- db |>
+  mutate(
+    study = as.numeric(study),
+    label_country = as.character(label_country)
+  )
+
+render_kable_scroll <- function(df, caption, digits = NULL, max_height = "420px") {
+  tbl <- knitr::kable(
+    as.data.frame(df),
+    format = "html",
+    caption = caption,
+    digits = digits,
+    row.names = FALSE
+  )
+
+  if (requireNamespace("kableExtra", quietly = TRUE)) {
+    tbl <- kableExtra::kable_styling(
+      tbl,
+      full_width = FALSE,
+      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+      fixed_thead = TRUE
+    )
+    tbl <- kableExtra::scroll_box(tbl, width = "100%", height = max_height)
+  } else {
+    tbl <- htmltools::div(
+      style = paste0(
+        "overflow:auto; max-height:", max_height,
+        "; border:1px solid #d9d9d9; padding:6px;"
+      ),
+      htmltools::HTML(as.character(tbl))
+    )
+  }
+
+  tbl
+}
+```
+
+## 1. Pooled Database Dimensions
+
+```{r}
+dimensions <- tibble(
+  n_rows = nrow(db),
+  n_columns = ncol(db),
+  object_size_mb = round(as.numeric(object.size(db)) / 1024^2, 2)
+)
+
+render_kable_scroll(dimensions, "Dimensions of the pooled database", max_height = "260px")
+```
+
+## 2. Countries by Year and Total Number of Countries
+
+```{r}
+countries_by_year <- db |>
+  filter(!is.na(study), !is.na(label_country), label_country != "") |>
+  distinct(study, label_country) |>
+  arrange(study, label_country) |>
+  group_by(study) |>
+  summarise(
+    countries = paste(label_country, collapse = "; "),
+    n_countries = n(),
+    .groups = "drop"
+  ) |>
+  arrange(study)
+
+render_kable_scroll(countries_by_year, "Countries by year and number of countries", max_height = "360px")
+```
+
+## 3. Statistical Distribution of Student-Level Variables
+
+### 3.1 Frequencies for Qualitative Variables
+
+```{r}
+id_vars <- c("idstudent", "idschool", "idcountry")
+
+is_qualitative <- function(x, nm) {
+  if (nm %in% id_vars) return(FALSE)
+  if (is.character(x) || is.factor(x) || is.logical(x)) return(TRUE)
+  if (is.numeric(x) || is.integer(x)) {
+    ux <- unique(x[!is.na(x)])
+    return(length(ux) <= 12)
+  }
+  FALSE
+}
+
+qual_vars <- names(db)[map2_lgl(db, names(db), is_qualitative)]
+
+freq_table <- function(data, var) {
+  data |>
+    mutate(value = as.character(.data[[var]])) |>
+    mutate(value = if_else(is.na(value), "NA", value)) |>
+    count(value, name = "n", sort = TRUE) |>
+    mutate(
+      variable = var,
+      pct = round(100 * n / sum(n), 2)
+    ) |>
+    select(variable, value, n, pct)
+}
+
+if (length(qual_vars) == 0) {
+  qualitative_frequencies <- tibble(note = "No qualitative variables detected by current rule.")
+} else {
+  qualitative_frequencies <- map_dfr(qual_vars, ~ freq_table(db, .x))
+}
+
+render_kable_scroll(
+  qualitative_frequencies,
+  "Frequencies for qualitative variables",
+  max_height = "420px"
+)
+```
+
+### 3.2 Summary Statistics for Quantitative Variables
+
+```{r}
+is_quantitative <- function(x, nm) {
+  if (nm %in% id_vars) return(FALSE)
+  if (!(is.numeric(x) || is.integer(x))) return(FALSE)
+  ux <- unique(x[!is.na(x)])
+  length(ux) > 12
+}
+
+quant_vars <- names(db)[map2_lgl(db, names(db), is_quantitative)]
+
+safe_skewness <- function(x) {
+  x <- x[!is.na(x)]
+  n <- length(x)
+  if (n < 3) return(NA_real_)
+  s <- sd(x)
+  if (is.na(s) || s == 0) return(NA_real_)
+  m <- mean(x)
+  mean(((x - m) / s)^3)
+}
+
+safe_kurtosis <- function(x) {
+  x <- x[!is.na(x)]
+  n <- length(x)
+  if (n < 4) return(NA_real_)
+  s <- sd(x)
+  if (is.na(s) || s == 0) return(NA_real_)
+  m <- mean(x)
+  mean(((x - m) / s)^4) - 3
+}
+
+if (length(quant_vars) == 0) {
+  quantitative_summary <- tibble(note = "No quantitative variables detected by current rule.")
+} else {
+  quantitative_summary <- tibble(variable = quant_vars) |>
+    mutate(
+      n_non_missing = map_int(variable, ~ sum(!is.na(db[[.x]]))),
+      mean = map_dbl(variable, ~ mean(db[[.x]], na.rm = TRUE)),
+      median = map_dbl(variable, ~ median(db[[.x]], na.rm = TRUE)),
+      sd = map_dbl(variable, ~ sd(db[[.x]], na.rm = TRUE)),
+      min = map_dbl(variable, ~ suppressWarnings(min(db[[.x]], na.rm = TRUE))),
+      max = map_dbl(variable, ~ suppressWarnings(max(db[[.x]], na.rm = TRUE))),
+      kurt = map_dbl(variable, ~ safe_kurtosis(db[[.x]])),
+      sk = map_dbl(variable, ~ safe_skewness(db[[.x]]))
+    ) |>
+    mutate(across(c(mean, median, sd, min, max, kurt, sk), ~ ifelse(is.infinite(.x), NA_real_, .x)))
+}
+
+render_kable_scroll(
+  quantitative_summary,
+  "Distribution statistics for quantitative variables",
+  digits = 3,
+  max_height = "420px"
+)
+```
+
+## 4. NA Distribution per Variable (n, %, and % by Year)
+
+```{r}
+na_overall <- tibble(variable = names(db)) |>
+  mutate(
+    n_na = map_int(variable, ~ sum(is.na(db[[.x]]))),
+    pct_na = round(100 * n_na / nrow(db), 2)
+  )
+
+na_by_year <- map_dfr(names(db), function(v) {
+  db |>
+    group_by(study) |>
+    summarise(
+      variable = v,
+      pct_na_year = round(100 * mean(is.na(.data[[v]])), 2),
+      .groups = "drop"
+    )
+}) |>
+  mutate(study = paste0("pct_na_", study)) |>
+  pivot_wider(names_from = study, values_from = pct_na_year)
+
+na_variable_distribution <- na_overall |>
+  left_join(na_by_year, by = "variable") |>
+  arrange(desc(pct_na), variable)
+
+render_kable_scroll(
+  na_variable_distribution,
+  "NA distribution per variable: n, %, and % by year",
+  digits = 2,
+  max_height = "420px"
+)
+```
+
+## 5. NA Distribution by Country (Total and by Year)
+
+The country-level NA distribution is computed over analysis variables only:
+contact, peaceful, sign, spray, trafic, occupy, gini, parents_hisced, gender, civic_test, weights.
+
+```{r}
+analysis_vars <- c(
+  "contact", "peaceful", "sign", "spray", "trafic", "occupy",
+  "gini", "parents_hisced", "gender", "civic_test", "weights"
+)
+analysis_vars <- analysis_vars[analysis_vars %in% names(db)]
+
+if (length(analysis_vars) == 0) {
+  stop("No analysis variables found for country-level NA distribution.")
+}
+
+country_year_na <- db |>
+  filter(!is.na(label_country), label_country != "", !is.na(study)) |>
+  group_by(label_country, study) |>
+  summarise(
+    n_students = n(),
+    n_cells = n() * length(analysis_vars),
+    n_na_cells = sum(is.na(as.matrix(across(all_of(analysis_vars))))),
+    pct_na_cells = round(100 * n_na_cells / n_cells, 2),
+    n_students_any_na = sum(if_any(all_of(analysis_vars), is.na)),
+    pct_students_any_na = round(100 * n_students_any_na / n_students, 2),
+    .groups = "drop"
+  ) |>
+  arrange(label_country, study)
+
+country_na_total <- country_year_na |>
+  group_by(label_country) |>
+  summarise(
+    years_participating = paste(sort(unique(study)), collapse = ", "),
+    n_years = n_distinct(study),
+    n_students = sum(n_students),
+    n_cells = sum(n_cells),
+    n_na_cells = sum(n_na_cells),
+    pct_na_cells = round(100 * n_na_cells / n_cells, 2),
+    n_students_any_na = sum(n_students_any_na),
+    pct_students_any_na = round(100 * n_students_any_na / n_students, 2),
+    .groups = "drop"
+  ) |>
+  arrange(label_country)
+
+render_kable_scroll(
+  country_na_total,
+  "NA distribution by country (total over participating years)",
+  digits = 2,
+  max_height = "420px"
+)
+```
+
+```{r}
+render_kable_scroll(
+  country_year_na,
+  "NA distribution by country and year",
+  digits = 2,
+  max_height = "420px"
+)
+```
+
+## Session Info
+
+```{r}
+sessionInfo()
+```
