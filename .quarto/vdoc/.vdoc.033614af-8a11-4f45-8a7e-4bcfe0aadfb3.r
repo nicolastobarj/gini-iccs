@@ -1,0 +1,329 @@
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+library(dplyr)
+library(tidyr)
+library(readr)
+library(purrr)
+library(ggplot2)
+
+pooled_path <- "proc/output/iccs_cived_1999_2009_2016_2022_pooled.rds"
+
+pooled_path_candidates <- c(
+	"proc/output/iccs_cived_1999_2009_2016_2022_pooled.rds",
+	"output/iccs_cived_1999_2009_2016_2022_pooled.rds"
+)
+
+pooled_path <- pooled_path_candidates[file.exists(pooled_path_candidates)][1]
+
+if (!file.exists(pooled_path)) {
+	stop(
+		"Pooled file not found. Tried: ",
+		paste(pooled_path_candidates, collapse = ", ")
+	)
+}
+
+db <- readRDS(pooled_path)
+#
+#
+#
+#
+#
+dimensions <- tibble(
+	n_rows = nrow(db),
+	n_columns = ncol(db),
+	object_size_mb = round(as.numeric(object.size(db)) / 1024^2, 2)
+)
+
+dimensions
+#
+#
+#
+structure_tbl <- tibble(
+	variable = names(db),
+	class = purrr::map_chr(db, ~ paste(class(.x), collapse = ", ")),
+	type = purrr::map_chr(db, typeof)
+)
+
+structure_tbl
+#
+#
+#
+#
+#
+study_counts <- db |>
+	count(study, name = "n") |>
+	mutate(pct = round(100 * n / sum(n), 2)) |>
+	arrange(study)
+
+study_counts
+#
+#
+#
+country_by_study <- db |>
+	group_by(study) |>
+	summarise(
+		n_countries = n_distinct(idcntry, na.rm = TRUE),
+		n_schools = n_distinct(idschool, na.rm = TRUE),
+		.groups = "drop"
+	) |>
+	arrange(study)
+
+country_by_study
+#
+#
+#
+#
+#
+na_profile <- tibble(variable = names(db)) |>
+	mutate(
+		n_missing = purrr::map_int(variable, ~ sum(is.na(db[[.x]]))),
+		pct_missing = round(100 * n_missing / nrow(db), 2),
+		n_non_missing = nrow(db) - n_missing
+	) |>
+	arrange(desc(pct_missing), variable)
+
+na_profile
+#
+#
+#
+#
+#
+na_profile |>
+	slice_head(n = min(15, nrow(na_profile)))
+#
+#
+#
+#
+#
+key_vars <- c("gini", "PV1CIV", "pct_know", "S_GENDER", "S_HISCED", "University", "internet")
+key_vars <- key_vars[key_vars %in% names(db)]
+
+na_by_study <- db |>
+	group_by(study) |>
+	summarise(
+		across(
+			all_of(key_vars),
+			~ round(100 * mean(is.na(.x)), 2),
+			.names = "{.col}_na_pct"
+		),
+		.groups = "drop"
+	) |>
+	arrange(study)
+
+na_by_study
+#
+#
+#
+#
+#
+#
+#
+is_discrete <- function(x, max_unique = 20) {
+	if (is.character(x) || is.factor(x) || is.logical(x)) {
+		return(TRUE)
+	}
+	if (is.numeric(x) || is.integer(x)) {
+		ux <- unique(x[!is.na(x)])
+		return(length(ux) <= max_unique)
+	}
+	FALSE
+}
+
+discrete_vars <- names(db)[purrr::map_lgl(db, is_discrete)]
+discrete_vars
+#
+#
+#
+freq_table <- function(data, var) {
+	data |>
+		count(value = .data[[var]], name = "n", sort = TRUE) |>
+		mutate(
+			variable = var,
+			pct = round(100 * n / sum(n), 2)
+		) |>
+		select(all_of(c("variable", "value", "n", "pct")))
+}
+
+freqs_all <- purrr::map_dfr(discrete_vars, ~ freq_table(db, .x))
+
+freqs_all
+#
+#
+#
+#
+#
+core_discrete <- c(
+	"study", "year", "marcha", "ocupa", "trafico", "rayar",
+	"S_GENDER", "University"
+)
+core_discrete <- core_discrete[core_discrete %in% names(db)]
+
+freqs_all |>
+	filter(variable %in% core_discrete) |>
+	arrange(variable, desc(n), value)
+#
+#
+#
+#
+#
+numeric_vars <- names(db)[purrr::map_lgl(db, is.numeric)]
+
+num_summary <- tibble(variable = numeric_vars) |>
+	mutate(
+		n_non_missing = purrr::map_int(variable, ~ sum(!is.na(db[[.x]]))),
+		mean = purrr::map_dbl(variable, ~ mean(db[[.x]], na.rm = TRUE)),
+		sd = purrr::map_dbl(variable, ~ sd(db[[.x]], na.rm = TRUE)),
+		min = purrr::map_dbl(variable, ~ suppressWarnings(min(db[[.x]], na.rm = TRUE))),
+		p01 = purrr::map_dbl(variable, ~ as.numeric(quantile(db[[.x]], probs = 0.01, na.rm = TRUE, names = FALSE))),
+		p05 = purrr::map_dbl(variable, ~ as.numeric(quantile(db[[.x]], probs = 0.05, na.rm = TRUE, names = FALSE))),
+		p25 = purrr::map_dbl(variable, ~ as.numeric(quantile(db[[.x]], probs = 0.25, na.rm = TRUE, names = FALSE))),
+		p50 = purrr::map_dbl(variable, ~ as.numeric(quantile(db[[.x]], probs = 0.50, na.rm = TRUE, names = FALSE))),
+		p75 = purrr::map_dbl(variable, ~ as.numeric(quantile(db[[.x]], probs = 0.75, na.rm = TRUE, names = FALSE))),
+		p95 = purrr::map_dbl(variable, ~ as.numeric(quantile(db[[.x]], probs = 0.95, na.rm = TRUE, names = FALSE))),
+		p99 = purrr::map_dbl(variable, ~ as.numeric(quantile(db[[.x]], probs = 0.99, na.rm = TRUE, names = FALSE))),
+		max = purrr::map_dbl(variable, ~ suppressWarnings(max(db[[.x]], na.rm = TRUE)))
+	)
+
+# Protect against all-NA columns where min/max become Inf/-Inf.
+num_summary <- num_summary |>
+	mutate(
+		across(c(mean, sd, min, p01, p05, p25, p50, p75, p95, p99, max), ~ ifelse(is.infinite(.x), NA_real_, .x))
+	)
+
+num_summary
+#
+#
+#
+#
+#
+#
+#
+gini_check <- db |>
+	group_by(study, idcntry) |>
+	summarise(
+		n_obs = n(),
+		gini_non_missing = sum(!is.na(gini)),
+		gini_unique_values = n_distinct(gini, na.rm = TRUE),
+		gini_min = suppressWarnings(min(gini, na.rm = TRUE)),
+		gini_max = suppressWarnings(max(gini, na.rm = TRUE)),
+		.groups = "drop"
+	) |>
+	mutate(
+		gini_min = ifelse(is.infinite(gini_min), NA_real_, gini_min),
+		gini_max = ifelse(is.infinite(gini_max), NA_real_, gini_max),
+		gini_constant_within_study_country = case_when(
+			gini_non_missing == 0 ~ NA,
+			gini_unique_values == 1 ~ TRUE,
+			TRUE ~ FALSE
+		)
+	) |>
+	arrange(study, idcntry)
+
+gini_check
+#
+#
+#
+gini_issues <- gini_check |>
+	filter(isFALSE(gini_constant_within_study_country) | is.na(gini_non_missing) | gini_non_missing == 0)
+
+gini_issues
+#
+#
+#
+#
+#
+range_check <- tibble(
+	variable = c("marcha", "ocupa", "trafico", "rayar", "S_GENDER", "University", "pct_know", "year"),
+	expected_min = c(0, 0, 0, 0, 0, 0, 1, 1),
+	expected_max = c(1, 1, 1, 1, 1, 1, 100, 4)
+) |>
+	filter(variable %in% names(db)) |>
+	rowwise() |>
+	mutate(
+		observed_min = suppressWarnings(min(db[[variable]], na.rm = TRUE)),
+		observed_max = suppressWarnings(max(db[[variable]], na.rm = TRUE)),
+		out_of_range_n = sum(
+			!is.na(db[[variable]]) &
+				(db[[variable]] < expected_min | db[[variable]] > expected_max)
+		)
+	) |>
+	ungroup() |>
+	mutate(
+		observed_min = ifelse(is.infinite(observed_min), NA_real_, observed_min),
+		observed_max = ifelse(is.infinite(observed_max), NA_real_, observed_max)
+	)
+
+range_check
+#
+#
+#
+#
+#
+plot_vars <- c("gini", "PV1CIV", "pct_know", "radical", "pacific", "internet")
+plot_vars <- plot_vars[plot_vars %in% names(db)]
+
+for (v in plot_vars) {
+	p <- ggplot(db, aes(x = .data[[v]])) +
+		geom_histogram(bins = 40, color = "white") +
+		facet_wrap(~study, scales = "free_y") +
+		theme_minimal() +
+		labs(
+			title = paste("Distribution of", v, "by study"),
+			x = v,
+			y = "Count"
+		)
+	print(p)
+}
+#
+#
+#
+#
+#
+diagnostic_summary <- list(
+	dimensions = dimensions,
+	study_counts = study_counts,
+	top_missing_variables = na_profile |> slice_head(n = min(10, nrow(na_profile))),
+	gini_issue_cases = gini_issues,
+	out_of_range_flags = range_check |> filter(out_of_range_n > 0)
+)
+
+diagnostic_summary
+#
+#
+#
+#
+#
+#
+#
+#
+#
+View(readRDS()
+#
+#
+#

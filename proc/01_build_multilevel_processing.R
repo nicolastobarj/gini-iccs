@@ -7,6 +7,49 @@ standard_vars <- c(
   "gini", "PV1CIV", "pct_know", "S_GENDER", "S_HISCED", "University", "internet", "totwgts"
 )
 
+swiid_study_years <- c(1999, 2009, 2016, 2022)
+
+# ICCS includes a few study-specific country IDs that should map to standard SWIID names.
+idcntry_country_overrides <- tibble::tribble(
+  ~idcntry, ~country,
+  36, "Australia",
+  76, "Brazil",
+  158, "Taiwan",
+  200, "Czech Republic",
+  250, "France",
+  276, "Germany",
+  344, "Hong Kong",
+  348, "Hungary",
+  410, "Korea",
+  620, "Portugal",
+  642, "Romania",
+  643, "Russia",
+  688, "Serbia",
+  703, "Slovakia",
+  826, "United Kingdom",
+  840, "United States",
+  926, "United Kingdom",
+  956, "Belgium",
+  957, "Belgium",
+  9642, "Palestinian Territories",
+  276001, "Germany",
+  276005, "Germany"
+)
+
+# Harmonize legacy country labels from ICCS/CIVED files to SWIID naming.
+country_key_aliases <- c(
+  "hong kong sar" = "hong kong",
+  "russian federation" = "russia",
+  "slovak republic" = "slovakia",
+  "chinese taipei" = "taiwan",
+  "korea republic of" = "korea",
+  "belgium flemish" = "belgium",
+  "england" = "united kingdom",
+  "germany north rhine westphalia" = "germany",
+  "germany schleswig holstein" = "germany",
+  "germany schleswig holstein land" = "germany"
+)
+
 binary_12_yes <- function(x, na_vals = c(0, 8, 9, 99)) {
   dplyr::case_when(
     x %in% c(1, 2) ~ 1,
@@ -57,33 +100,134 @@ add_common_design_vars <- function(df) {
     )
 }
 
-gini_2016 <- tibble::tribble(
-  ~idcntry, ~gini,
-  956, 25.3, 100, 38.7, 152, 45.8, 170, 47.7, 208, 25.7, 276001, 28.8,
-  214, 43.8, 233, 30.8, 246, 25.7, 344, 44.2, 191, 31.7, 380, 35.3,
-  410, 29.9, 440, 35.5, 428, 36.6, 484, 43.9, 470, 27.0, 528, 27.8,
-  578, 25.9, 604, 44.7, 643, 35.0, 705, 25.2, 752, 27.2, 158, 30.0
-)
+normalize_country_name <- function(x) {
+  x <- iconv(x, to = "ASCII//TRANSLIT")
+  x <- tolower(x)
+  x <- gsub("[^a-z0-9]+", " ", x)
+  x <- trimws(x)
+  dplyr::recode(x, !!!country_key_aliases, .default = x)
+}
 
-gini_2009 <- tibble::tribble(
-  ~idcntry, ~gini,
-  40, 28.9, 100, 35.2, 152, 48.5, 158, 31.8, 170, 52.7, 196, 28.9,
-  203, 24.3, 208, 24.3, 214, 47.7, 233, 31.9, 246, 24.4, 300, 32.7,
-  320, 47.0, 344, 42.8, 360, 46.8, 372, 30.1, 380, 33.0, 410, 31.7,
-  428, 36.6, 438, NA_real_, 440, 34.8, 442, 28.3, 470, 27.2, 484, 44.8,
-  528, 25.8, 554, 31.9, 578, 24.5, 600, 49.5, 616, 30.7, 643, 35.6,
-  703, 25.8, 705, 25.5, 724, 32.4, 752, 26.9, 756, 29.7, 764, 40.7,
-  926, 33.7, 956, 26.8
-)
+map_iccs2022_country_code <- function(code) {
+  dplyr::recode(
+    code,
+    "BGR" = "Bulgaria",
+    "BRA" = "Brazil",
+    "COL" = "Colombia",
+    "CYP" = "Cyprus",
+    "DNK" = "Denmark",
+    "DNW" = "Germany",
+    "DSH" = "Germany",
+    "ESP" = "Spain",
+    "EST" = "Estonia",
+    "FRA" = "France",
+    "HRV" = "Croatia",
+    "ITA" = "Italy",
+    "LTU" = "Lithuania",
+    "LVA" = "Latvia",
+    "MLT" = "Malta",
+    "NLD" = "Netherlands",
+    "NOR" = "Norway",
+    "POL" = "Poland",
+    "ROU" = "Romania",
+    "SRB" = "Serbia",
+    "SVK" = "Slovakia",
+    "SVN" = "Slovenia",
+    "SWE" = "Sweden",
+    "TWN" = "Taiwan",
+    .default = NA_character_
+  )
+}
 
-gini_1999 <- tibble::tribble(
-  ~idcntry, ~gini,
-  36, 31.5, 957, 28.3, 100, 30.8, 152, 50.5, 170, 51.3, 196, 27.4,
-  200, 22.9, 208, 22.8, 826, 35.1, 233, 33.3, 246, 24.2, 276, 26.0,
-  300, 33.9, 344, 43.1, 348, 29.0, 380, 32.7, 428, 33.9, 440, 32.3,
-  578, 24.7, 616, 29.5, 620, 30.5, 642, 29.8, 643, 34.7, 703, 25.0,
-  705, 22.8, 752, 25.4, 756, 26.2, 840, 36.8
-)
+read_swiid_lookup <- function(
+    path = "raw_data/swiid9_92/swiid9_92_summary.csv",
+    study_years = swiid_study_years) {
+  read_csv(path, show_col_types = FALSE) |>
+    transmute(
+      country = as.character(country),
+      study = as.numeric(year),
+      gini = as.numeric(gini_disp)
+    ) |>
+    filter(study %in% study_years) |>
+    mutate(country_key = normalize_country_name(country)) |>
+    select(country_key, study, gini) |>
+    distinct(country_key, study, .keep_all = TRUE)
+}
+
+extract_idcntry_country_lookup <- function(raw_df) {
+  id_raw <- NULL
+
+  if ("idcntry" %in% names(raw_df)) {
+    id_raw <- raw_df$idcntry
+  }
+  if (is.null(id_raw) && "cntryid" %in% names(raw_df)) {
+    id_raw <- raw_df$cntryid
+  }
+
+  if (is.null(id_raw)) {
+    return(tibble::tibble(idcntry = numeric(), country = character()))
+  }
+
+  country_lbl <- suppressWarnings(as.character(haven::as_factor(id_raw, levels = "labels")))
+
+  out <- tibble::tibble(
+    idcntry = as.numeric(id_raw),
+    country = country_lbl
+  ) |>
+    filter(!is.na(idcntry), !is.na(country), country != "")
+
+  # If labels are unavailable, as_factor can return numeric text; drop those pseudo-labels.
+  out |>
+    filter(!grepl("^[0-9.]+$", country)) |>
+    distinct(idcntry, country)
+}
+
+build_country_lookup_from_files <- function(file_1999, file_2009, file_2016) {
+  from_files <- bind_rows(
+    extract_idcntry_country_lookup(read_dta(file_1999)),
+    extract_idcntry_country_lookup(read_dta(file_2009)),
+    extract_idcntry_country_lookup(read_dta(file_2016))
+  )
+
+  # Put overrides first so they take precedence when labels are inconsistent.
+  bind_rows(idcntry_country_overrides, from_files) |>
+    distinct(idcntry, .keep_all = TRUE) |>
+    mutate(country_key = normalize_country_name(country)) |>
+    select(idcntry, country_key)
+}
+
+join_swiid_gini <- function(df, study_year, country_lookup, swiid_lookup, country_lookup_extra = NULL) {
+  lookup_all <- bind_rows(country_lookup_extra, country_lookup) |>
+    distinct(idcntry, .keep_all = TRUE)
+
+  if (!"country_key" %in% names(df)) {
+    df$country_key <- NA_character_
+  }
+
+  out <- df |>
+    mutate(study = if_else(is.na(study), study_year, as.numeric(study))) |>
+    select(-any_of("gini")) |>
+    rename(country_key_input = country_key) |>
+    left_join(lookup_all, by = "idcntry") |>
+    mutate(country_key = dplyr::coalesce(country_key_input, country_key)) |>
+    select(-country_key_input) |>
+    left_join(swiid_lookup, by = c("country_key", "study")) |>
+    select(-country_key)
+
+  missing_ids <- out |>
+    filter(is.na(gini)) |>
+    distinct(idcntry) |>
+    pull(idcntry)
+
+  if (length(missing_ids) > 0) {
+    warning(
+      "SWIID gini missing for study ", study_year,
+      " and idcntry: ", paste(sort(missing_ids), collapse = ", ")
+    )
+  }
+
+  out
+}
 
 harmonize_ids <- function(df) {
   df |>
@@ -92,7 +236,7 @@ harmonize_ids <- function(df) {
         study == 1999 ~ 1,
         study == 2009 ~ 2,
         study == 2016 ~ 3,
-        study == 2023 ~ 4,
+        study == 2022 ~ 4,
         TRUE ~ NA_real_
       )
     )
@@ -110,7 +254,7 @@ select_standard <- function(df) {
     select(all_of(standard_vars))
 }
 
-process_iccs_2016 <- function(path) {
+process_iccs_2016 <- function(path, country_lookup, swiid_lookup) {
   df <- read_dta(path) |> as_tibble() |> add_common_design_vars()
 
   if (all(c("IS3G30C", "IS3G30K", "IS3G30J", "IS3G30I", "IS3G31I", "IS3G31B", "IS3G30D") %in% names(df))) {
@@ -128,18 +272,20 @@ process_iccs_2016 <- function(path) {
       )
   }
 
+  if (!"pacific" %in% names(df)) {
+    warning("Study 2016: pacific not found in input file and required raw items are unavailable.")
+  }
+
   df |>
-    select(-any_of("gini")) |>
-    left_join(gini_2016, by = "idcntry") |>
+    join_swiid_gini(study_year = 2016, country_lookup = country_lookup, swiid_lookup = swiid_lookup) |>
     group_by(idcntry) |>
     mutate(pct_know = dplyr::ntile(PV1CIV, 100)) |>
     ungroup() |>
-    mutate(study = if_else(is.na(study), 2016, as.numeric(study))) |>
     harmonize_ids() |>
     select_standard()
 }
 
-process_iccs_2009 <- function(path) {
+process_iccs_2009 <- function(path, country_lookup, swiid_lookup) {
   df <- read_dta(path) |> as_tibble() |> add_common_design_vars()
 
   if (all(c("is2p31d", "is2p31g", "is2p31h", "is2p31i", "is2p31c", "is2p31e", "sgender", "hisced") %in% names(df))) {
@@ -159,18 +305,20 @@ process_iccs_2009 <- function(path) {
       )
   }
 
+  if (!"pacific" %in% names(df)) {
+    warning("Study 2009: pacific not found in input file and required raw items are unavailable.")
+  }
+
   df |>
-    select(-any_of("gini")) |>
-    left_join(gini_2009, by = "idcntry") |>
+    join_swiid_gini(study_year = 2009, country_lookup = country_lookup, swiid_lookup = swiid_lookup) |>
     group_by(idcntry) |>
     mutate(pct_know = dplyr::ntile(PV1CIV, 100)) |>
     ungroup() |>
-    mutate(study = if_else(is.na(study), 2009, as.numeric(study))) |>
     harmonize_ids() |>
     select_standard()
 }
 
-process_cived_1999 <- function(path) {
+process_cived_1999 <- function(path, country_lookup, swiid_lookup) {
   df <- read_dta(path) |> as_tibble() |> add_common_design_vars()
 
   if (all(c("bs5m9", "bs5m10", "bs5m11", "bs5m12", "bs5m4", "bs5m8", "itsex", "bsgedum", "bsgeduf", "knowlmle", "bsgp1") %in% names(df))) {
@@ -211,13 +359,15 @@ process_cived_1999 <- function(path) {
       )
   }
 
+  if (!"pacific" %in% names(df)) {
+    warning("Study 1999: pacific not found in input file and required raw items are unavailable.")
+  }
+
   df |>
-    select(-any_of("gini")) |>
-    left_join(gini_1999, by = "idcntry") |>
+    join_swiid_gini(study_year = 1999, country_lookup = country_lookup, swiid_lookup = swiid_lookup) |>
     group_by(idcntry) |>
     mutate(pct_know = dplyr::ntile(PV1CIV, 100)) |>
     ungroup() |>
-    mutate(study = if_else(is.na(study), 1999, as.numeric(study))) |>
     harmonize_ids() |>
     select_standard()
 }
@@ -226,12 +376,16 @@ build_multilevel_dataset <- function(
     file_1999 = "raw_data/subset_CIVED_1999.dta",
     file_2009 = "raw_data/subset_ICCS_2009.dta",
     file_2016 = "raw_data/subset_ICCS_2016.dta",
+    swiid_summary_path = "raw_data/swiid9_92/swiid9_92_summary.csv",
     output_dir = "proc/output") {
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-  cived_1999 <- process_cived_1999(file_1999)
-  iccs_2009 <- process_iccs_2009(file_2009)
-  iccs_2016 <- process_iccs_2016(file_2016)
+  country_lookup <- build_country_lookup_from_files(file_1999, file_2009, file_2016)
+  swiid_lookup <- read_swiid_lookup(swiid_summary_path)
+
+  cived_1999 <- process_cived_1999(file_1999, country_lookup = country_lookup, swiid_lookup = swiid_lookup)
+  iccs_2009 <- process_iccs_2009(file_2009, country_lookup = country_lookup, swiid_lookup = swiid_lookup)
+  iccs_2016 <- process_iccs_2016(file_2016, country_lookup = country_lookup, swiid_lookup = swiid_lookup)
 
   pooled <- bind_rows(cived_1999, iccs_2009, iccs_2016)
 
