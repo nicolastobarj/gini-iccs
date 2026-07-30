@@ -1,0 +1,16 @@
+variable,type,description
+idstudent,numeric,Student ID
+idschool,numeric,School ID
+idcountry,numeric,Country numeric ID
+label_country,character,Country label used for SWIID matching
+contact,numeric,Expected participation: contact representative
+peaceful,numeric,Expected participation: peaceful protest/march
+sign,numeric,Expected participation: sign/collect petition signatures
+spray,numeric,Expected participation: spray protest slogans
+trafic,numeric,Expected participation: block traffic
+occupy,numeric,Expected participation: occupy buildings
+gini,numeric,Gini disposable income from SWIID
+parents_hisced,numeric,Highest parental education (harmonized)
+gender,numeric,"Gender (harmonized: 1=female, 0=male)"
+civic_test,numeric,Civic knowledge score (PV1CIV/KNOWLMLE)
+weights,numeric,Student total weight
