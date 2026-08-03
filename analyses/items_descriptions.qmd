@@ -1,0 +1,1238 @@
+---
+title: "Items Descriptions"
+author: "Political Socialization Project"
+format:
+  html:
+    toc: true
+    number-sections: true
+    code-fold: true
+execute:
+  echo: false
+  warning: false
+  message: false
+  error: true
+---
+
+## Scope
+
+Descriptive analysis of dichotomized participation items.
+
+## Analyses Navigation
+
+This report is part of the analyses folder, where the project will centralize visualizations, statistical analyses, and models.
+
+- Analyses index: [analyses/README.md](README.md)
+- This report (HTML): [analyses/items_descriptions.html](items_descriptions.html)
+- GitHub Pages link pattern: `https://<your-user>.github.io/<your-repo>/analyses/items_descriptions.html`
+
+When GitHub Pages is enabled for the repository, replace `<your-user>` and `<your-repo>` in the URL above.
+
+Coding used in this report:
+
+- Values 1 and 2 are recoded to 0.
+- Values 3 and 4 are recoded to 1.
+- Missing values are never displayed in plots.
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(forcats)
+library(stringr)
+library(scales)
+library(ggrepel)
+library(purrr)
+
+set.seed(20260803)
+
+resolve_pooled_path <- function() {
+  candidates <- c(
+    "proc/output/pooled_data.rds",
+    "output/pooled_data.rds",
+    "../proc/output/pooled_data.rds",
+    "../../proc/output/pooled_data.rds"
+  )
+
+  hits <- candidates[file.exists(candidates)]
+  if (length(hits) == 0) {
+    stop("pooled_data.rds not found.")
+  }
+
+  normalizePath(hits[1], winslash = "/", mustWork = TRUE)
+}
+
+required_cols <- c(
+  "study", "label_country", "contact", "peaceful", "sign", "spray", "trafic", "occupy",
+  "gender", "parents_hisced", "civic_test", "gini"
+)
+
+db <- readRDS(resolve_pooled_path())
+missing_cols <- setdiff(required_cols, names(db))
+if (length(missing_cols) > 0) {
+  stop("Missing required columns: ", paste(missing_cols, collapse = ", "))
+}
+
+years <- c(1999, 2009, 2016, 2022)
+item_vars <- c("contact", "peaceful", "sign", "spray", "trafic", "occupy")
+
+item_meta <- tibble(
+  item = item_vars,
+  item_label = c(
+    "Contact representative", "Peaceful protest", "Sign petition",
+    "Spray slogans", "Block traffic", "Occupy buildings"
+  ),
+  item_type = c("Conventional", "Conventional", "Conventional", "Radical", "Radical", "Radical"),
+  item_order = c(1, 2, 3, 4, 5, 6),
+  item_color = c("#2C7FB8", "#4C9ED9", "#7FB9E8", "#C73E1D", "#DF6A4A", "#F29D84")
+)
+
+type_colors <- c("Conventional" = "#2C7FB8", "Radical" = "#C73E1D")
+item_colors <- setNames(item_meta$item_color, item_meta$item_label)
+gender_colors <- c("Men" = "#34495E", "Women" = "#E67E9A")
+hisced_colors <- c("Non-university" = "#6B7280", "University" = "#0F766E")
+region_colors <- c(
+  "South America" = "#1F78B4",
+  "North America" = "#33A02C",
+  "Europe" = "#6A3D9A",
+  "Asia" = "#E31A1C",
+  "Africa" = "#FF7F00",
+  "Oceania" = "#B15928",
+  "Unknown" = "#9CA3AF"
+)
+
+normalize_country_name <- function(x) {
+  x <- as.character(x)
+  x <- iconv(x, to = "ASCII//TRANSLIT")
+  x <- tolower(x)
+  x <- gsub("[^a-z0-9]+", " ", x)
+  x <- str_trim(x)
+  recode(
+    x,
+    "russian federation" = "russia",
+    "slovak republic" = "slovakia",
+    "chinese taipei" = "taiwan",
+    "korea republic of" = "korea",
+    "hong kong sar" = "hong kong",
+    "belgium flemish" = "belgium",
+    "england" = "united kingdom",
+    .default = x
+  )
+}
+
+region_lookup <- tibble(
+  country_key = c(
+    "argentina", "australia", "austria", "belgium", "brazil", "bulgaria", "chile", "colombia",
+    "croatia", "cyprus", "czech republic", "denmark", "dominican republic", "estonia", "finland",
+    "france", "germany", "greece", "guatemala", "hong kong", "hungary", "indonesia", "ireland",
+    "italy", "korea", "latvia", "liechtenstein", "lithuania", "luxembourg", "malta", "mexico",
+    "netherlands", "new zealand", "norway", "paraguay", "peru", "poland", "portugal", "romania",
+    "russia", "serbia", "slovakia", "slovenia", "spain", "sweden", "switzerland", "taiwan",
+    "thailand", "united kingdom", "united states"
+  ),
+  region = c(
+    "South America", "Oceania", "Europe", "Europe", "South America", "Europe", "South America", "South America",
+    "Europe", "Europe", "Europe", "Europe", "North America", "Europe", "Europe",
+    "Europe", "Europe", "Europe", "North America", "Asia", "Europe", "Asia", "Europe",
+    "Europe", "Asia", "Europe", "Europe", "Europe", "Europe", "Europe", "North America",
+    "Europe", "Oceania", "Europe", "South America", "South America", "Europe", "Europe", "Europe",
+    "Europe", "Europe", "Europe", "Europe", "Europe", "Europe", "Europe", "Asia",
+    "Asia", "Europe", "North America"
+  )
+)
+
+theme_conference <- function() {
+  theme_minimal(base_size = 13) +
+    theme(
+      plot.title = element_blank(),
+      plot.subtitle = element_blank(),
+      legend.position = "bottom",
+      legend.title = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.grid.major.y = element_line(color = "#e5e7eb"),
+      panel.grid.major.x = element_line(color = "#f3f4f6"),
+      strip.text = element_text(face = "bold"),
+      axis.title = element_text(face = "bold")
+    )
+}
+
+dichotomize_item <- function(x) {
+  case_when(
+    x %in% c(1, 2) ~ 0,
+    x %in% c(3, 4) ~ 1,
+    TRUE ~ NA_real_
+  )
+}
+
+ci_prop <- function(p, n) {
+  se <- sqrt((p * (1 - p)) / pmax(n, 1))
+  low <- pmax(0, p - 1.96 * se)
+  high <- pmin(1, p + 1.96 * se)
+  list(low = low, high = high)
+}
+
+cor_ci <- function(r, n) {
+  if (is.na(r) || is.na(n) || n <= 3 || abs(r) >= 1) {
+    return(c(NA_real_, NA_real_))
+  }
+  z <- atanh(r)
+  se <- 1 / sqrt(n - 3)
+  z_low <- z - 1.96 * se
+  z_high <- z + 1.96 * se
+  c(tanh(z_low), tanh(z_high))
+}
+
+iso3_from_country <- function(x) {
+  if (requireNamespace("countrycode", quietly = TRUE)) {
+    out <- countrycode::countrycode(x, origin = "country.name", destination = "iso3c", warn = FALSE)
+  } else {
+    out <- rep(NA_character_, length(x))
+  }
+
+  out[is.na(out)] <- toupper(substr(gsub("[^A-Za-z]", "", x[is.na(out)]), 1, 3))
+  out
+}
+
+pick_labels <- function(df, value_col = "pct", n_mid = 14) {
+  value_sym <- rlang::sym(value_col)
+
+  df |>
+    group_by(item_label) |>
+    group_modify(function(.x, .y) {
+      n_rows <- nrow(.x)
+      if (n_rows == 0) {
+        return(.x)
+      }
+
+      ord <- .x |> arrange(!!value_sym)
+      idx_bottom <- seq_len(min(3, n_rows))
+      idx_top <- seq(max(1, n_rows - 2), n_rows)
+
+      middle_idx <- setdiff(seq_len(n_rows), union(idx_bottom, idx_top))
+      n_mid_use <- min(n_mid, length(middle_idx))
+      idx_mid <- if (n_mid_use > 0) sample(middle_idx, n_mid_use) else integer(0)
+
+      keep_idx <- sort(unique(c(idx_bottom, idx_top, idx_mid)))
+      keep_countries <- ord$label_country[keep_idx]
+      keep_countries <- unique(c(keep_countries, "Chile"))
+
+      .x |>
+        mutate(label_flag = label_country %in% keep_countries)
+    }) |>
+    ungroup()
+}
+
+item_ordered_levels <- item_meta |>
+  arrange(item_order) |>
+  pull(item_label)
+
+db_clean <- db |>
+  mutate(
+    study = as.integer(study),
+    country_key = normalize_country_name(label_country),
+    gender = case_when(
+      gender == 0 ~ "Men",
+      gender == 1 ~ "Women",
+      gender == 2 ~ "Women",
+      TRUE ~ NA_character_
+    ),
+    hisced_group = case_when(
+      is.na(parents_hisced) ~ NA_character_,
+      parents_hisced >= 4 ~ "University",
+      parents_hisced < 4 ~ "Non-university",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  left_join(region_lookup, by = "country_key") |>
+  mutate(region = coalesce(region, "Unknown")) |>
+  mutate(across(all_of(item_vars), dichotomize_item, .names = "{.col}_bin"))
+
+item_long <- db_clean |>
+  select(
+    study, label_country, country_key, region, gender, hisced_group, civic_test, gini,
+    ends_with("_bin")
+  ) |>
+  pivot_longer(
+    cols = ends_with("_bin"),
+    names_to = "item",
+    values_to = "value"
+  ) |>
+  mutate(item = str_remove(item, "_bin$")) |>
+  left_join(item_meta, by = "item") |>
+  mutate(item_label = factor(item_label, levels = item_ordered_levels))
+
+country_item_year <- item_long |>
+  filter(!is.na(value), !is.na(label_country), label_country != "") |>
+  group_by(study, label_country, region, item, item_label, item_type) |>
+  summarise(
+    n = n(),
+    pct = mean(value),
+    .groups = "drop"
+  ) |>
+  mutate(
+    ci = map2(pct, n, ci_prop),
+    ci_low = map_dbl(ci, "low"),
+    ci_high = map_dbl(ci, "high"),
+    iso3 = iso3_from_country(label_country)
+  ) |>
+  select(-ci)
+
+region_item_year <- country_item_year |>
+  group_by(study, region, item, item_label) |>
+  summarise(
+    n = n(),
+    pct = mean(pct, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    ci = map2(pct, n, ci_prop),
+    ci_low = map_dbl(ci, "low"),
+    ci_high = map_dbl(ci, "high")
+  ) |>
+  select(-ci)
+
+country_gini <- db_clean |>
+  filter(!is.na(gini), !is.na(label_country), label_country != "") |>
+  group_by(study, label_country, region) |>
+  summarise(
+    gini = mean(gini, na.rm = TRUE),
+    iso3 = first(iso3_from_country(label_country)),
+    .groups = "drop"
+  )
+
+plot_student_overall <- function(year_value) {
+  d <- item_long |>
+    filter(study == year_value, !is.na(value)) |>
+    group_by(item_label, item_type) |>
+    summarise(
+      n = n(),
+      pct = mean(value),
+      .groups = "drop"
+    ) |>
+    mutate(
+      ci = map2(pct, n, ci_prop),
+      ci_low = map_dbl(ci, "low"),
+      ci_high = map_dbl(ci, "high")
+    ) |>
+    select(-ci)
+
+  type_means <- d |>
+    group_by(item_type) |>
+    summarise(mean_pct = mean(pct, na.rm = TRUE), .groups = "drop")
+
+  ggplot(d, aes(x = pct, y = fct_reorder(item_label, pct), fill = item_type)) +
+    geom_vline(
+      data = type_means,
+      aes(xintercept = mean_pct, color = item_type),
+      linetype = 2,
+      linewidth = 0.8,
+      show.legend = FALSE
+    ) +
+    geom_col(width = 0.72) +
+    geom_errorbarh(aes(xmin = ci_low, xmax = ci_high), height = 0.18, linewidth = 0.5) +
+    geom_text(aes(label = percent(pct, accuracy = 0.1)), hjust = -0.15, size = 3.8) +
+    scale_fill_manual(values = type_colors) +
+    scale_color_manual(values = type_colors) +
+    scale_x_continuous(
+      labels = percent_format(accuracy = 1),
+      expand = expansion(mult = c(0, 0.18))
+    ) +
+    labs(x = "Percentage with value = 1", y = NULL) +
+    theme_conference()
+}
+
+plot_student_by_gender <- function(year_value) {
+  d <- item_long |>
+    filter(study == year_value, !is.na(value), !is.na(gender)) |>
+    group_by(item_label, gender) |>
+    summarise(
+      n = n(),
+      pct = mean(value),
+      .groups = "drop"
+    ) |>
+    mutate(
+      ci = map2(pct, n, ci_prop),
+      ci_low = map_dbl(ci, "low"),
+      ci_high = map_dbl(ci, "high")
+    ) |>
+    mutate(gender = factor(gender, levels = c("Men", "Women"))) |>
+    select(-ci)
+
+  facet_mean <- d |>
+    group_by(item_label) |>
+    summarise(mean_pct = mean(pct), .groups = "drop")
+
+  ggplot(d, aes(x = gender, y = pct, fill = gender)) +
+    geom_hline(data = facet_mean, aes(yintercept = mean_pct), linetype = 2, color = "#6b7280") +
+    geom_col(width = 0.64) +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.12, linewidth = 0.5) +
+    geom_text(aes(label = percent(pct, accuracy = 0.1)), vjust = -0.45, size = 3.3) +
+    facet_wrap(~item_label, ncol = 2) +
+    scale_fill_manual(values = gender_colors, drop = FALSE) +
+    scale_x_discrete(drop = FALSE) +
+    scale_y_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0, 0.12))) +
+    labs(x = NULL, y = "Percentage with value = 1") +
+    theme_conference()
+}
+
+plot_student_by_hisced <- function(year_value) {
+  d <- item_long |>
+    filter(study == year_value, !is.na(value), !is.na(hisced_group)) |>
+    group_by(item_label, hisced_group) |>
+    summarise(
+      n = n(),
+      pct = mean(value),
+      .groups = "drop"
+    ) |>
+    mutate(
+      ci = map2(pct, n, ci_prop),
+      ci_low = map_dbl(ci, "low"),
+      ci_high = map_dbl(ci, "high")
+    ) |>
+    mutate(hisced_group = factor(hisced_group, levels = c("Non-university", "University"))) |>
+    select(-ci)
+
+  facet_mean <- d |>
+    group_by(item_label) |>
+    summarise(mean_pct = mean(pct), .groups = "drop")
+
+  ggplot(d, aes(x = hisced_group, y = pct, fill = hisced_group)) +
+    geom_hline(data = facet_mean, aes(yintercept = mean_pct), linetype = 2, color = "#6b7280") +
+    geom_col(width = 0.64) +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.12, linewidth = 0.5) +
+    geom_text(aes(label = percent(pct, accuracy = 0.1)), vjust = -0.45, size = 3.3) +
+    facet_wrap(~item_label, ncol = 2) +
+    scale_fill_manual(values = hisced_colors, drop = FALSE) +
+    scale_x_discrete(drop = FALSE) +
+    scale_y_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0, 0.12))) +
+    labs(x = NULL, y = "Percentage with value = 1") +
+    theme_conference()
+}
+
+plot_student_civic_corr <- function() {
+  d <- item_long |>
+    filter(!is.na(value), !is.na(civic_test)) |>
+    group_by(study, item_label, item_type) |>
+    summarise(
+      r = cor(civic_test, value, use = "complete.obs"),
+      .groups = "drop"
+    ) |>
+    mutate(study = factor(study, levels = years))
+
+  ggplot(d, aes(x = study, y = item_label, fill = r)) +
+    geom_tile(color = "white", linewidth = 0.8) +
+    geom_text(aes(label = number(r, accuracy = 0.01)), size = 3.4, color = "#111827") +
+    scale_fill_gradient2(
+      low = "#2166AC",
+      mid = "#F7F7F7",
+      high = "#B2182B",
+      midpoint = 0,
+      limits = c(-1, 1)
+    ) +
+    facet_grid(item_type ~ ., scales = "free_y", space = "free_y") +
+    labs(x = "Year", y = NULL, fill = "r") +
+    theme_conference() +
+    theme(
+      axis.text.y = element_text(face = "bold"),
+      strip.text.y = element_text(angle = 0)
+    )
+}
+
+plot_pooled_trend_items <- function() {
+  d <- item_long |>
+    filter(!is.na(value)) |>
+    group_by(study, item_label) |>
+    summarise(
+      n = n(),
+      pct = mean(value),
+      .groups = "drop"
+    ) |>
+    mutate(
+      ci = map2(pct, n, ci_prop),
+      ci_low = map_dbl(ci, "low"),
+      ci_high = map_dbl(ci, "high")
+    ) |>
+    select(-ci)
+
+  global_mean <- mean(d$pct, na.rm = TRUE)
+
+  ggplot(d, aes(x = study, y = pct, color = item_label, group = item_label)) +
+    geom_hline(yintercept = global_mean, linetype = 2, color = "#6b7280") +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.16, alpha = 0.9) +
+    geom_line(linewidth = 0.8) +
+    geom_point(size = 2.2) +
+    geom_text(aes(label = percent(pct, accuracy = 0.1)), vjust = -0.7, size = 3.0, show.legend = FALSE) +
+    scale_color_manual(values = item_colors) +
+    scale_x_continuous(breaks = years) +
+    scale_y_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0.02, 0.14))) +
+    labs(x = "Year", y = "Percentage with value = 1") +
+    theme_conference()
+}
+
+plot_pooled_heatmap <- function() {
+  d <- item_long |>
+    filter(!is.na(value)) |>
+    group_by(study, item_label, item_type, item_order) |>
+    summarise(pct = mean(value), .groups = "drop") |>
+    arrange(item_type, item_order) |>
+    mutate(item_label = factor(item_label, levels = unique(item_label)))
+
+  ggplot(d, aes(x = factor(study), y = item_label, fill = pct)) +
+    geom_tile(color = "white", linewidth = 0.6) +
+    geom_text(aes(label = percent(pct, accuracy = 0.1)), size = 3.4, color = "#111827") +
+    scale_fill_gradient(low = "#E5F0FA", high = "#0B4F8A", labels = percent_format(accuracy = 1)) +
+    labs(x = "Year", y = NULL, fill = "Value = 1") +
+    theme_conference()
+}
+
+plot_pooled_trend_gender <- function() {
+  d <- item_long |>
+    filter(!is.na(value), !is.na(gender)) |>
+    group_by(study, item_label, gender) |>
+    summarise(
+      n = n(),
+      pct = mean(value),
+      .groups = "drop"
+    ) |>
+    mutate(
+      ci = map2(pct, n, ci_prop),
+      ci_low = map_dbl(ci, "low"),
+      ci_high = map_dbl(ci, "high")
+    ) |>
+    select(-ci)
+
+  facet_mean <- d |>
+    group_by(item_label) |>
+    summarise(mean_pct = mean(pct), .groups = "drop")
+
+  ggplot(d, aes(x = study, y = pct, color = gender, group = gender)) +
+    geom_hline(data = facet_mean, aes(yintercept = mean_pct), linetype = 2, color = "#9ca3af", inherit.aes = FALSE) +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.14, alpha = 0.9) +
+    geom_line(linewidth = 0.75) +
+    geom_point(size = 1.8) +
+    geom_text(aes(label = percent(pct, accuracy = 0.1)), vjust = -0.6, size = 2.7, show.legend = FALSE) +
+    facet_wrap(~item_label, ncol = 2) +
+    scale_color_manual(values = gender_colors) +
+    scale_x_continuous(breaks = years) +
+    scale_y_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0.03, 0.13))) +
+    labs(x = "Year", y = "Percentage with value = 1") +
+    theme_conference()
+}
+
+plot_pooled_trend_hisced <- function() {
+  d <- item_long |>
+    filter(!is.na(value), !is.na(hisced_group)) |>
+    group_by(study, item_label, hisced_group) |>
+    summarise(
+      n = n(),
+      pct = mean(value),
+      .groups = "drop"
+    ) |>
+    mutate(
+      ci = map2(pct, n, ci_prop),
+      ci_low = map_dbl(ci, "low"),
+      ci_high = map_dbl(ci, "high")
+    ) |>
+    select(-ci)
+
+  facet_mean <- d |>
+    group_by(item_label) |>
+    summarise(mean_pct = mean(pct), .groups = "drop")
+
+  ggplot(d, aes(x = study, y = pct, color = hisced_group, group = hisced_group)) +
+    geom_hline(data = facet_mean, aes(yintercept = mean_pct), linetype = 2, color = "#9ca3af", inherit.aes = FALSE) +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.14, alpha = 0.9) +
+    geom_line(linewidth = 0.75) +
+    geom_point(size = 1.8) +
+    geom_text(aes(label = percent(pct, accuracy = 0.1)), vjust = -0.6, size = 2.7, show.legend = FALSE) +
+    facet_wrap(~item_label, ncol = 2) +
+    scale_color_manual(values = hisced_colors) +
+    scale_x_continuous(breaks = years) +
+    scale_y_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0.03, 0.13))) +
+    labs(x = "Year", y = "Percentage with value = 1") +
+    theme_conference()
+}
+
+plot_pooled_trend_corr <- function() {
+  d <- item_long |>
+    filter(!is.na(value), !is.na(civic_test)) |>
+    group_by(study, item_label) |>
+    summarise(
+      r = cor(civic_test, value, use = "complete.obs"),
+      n = sum(complete.cases(civic_test, value)),
+      .groups = "drop"
+    ) |>
+    rowwise() |>
+    mutate(
+      ci_low = cor_ci(r, n)[1],
+      ci_high = cor_ci(r, n)[2]
+    ) |>
+    ungroup()
+
+  facet_mean <- d |>
+    group_by(item_label) |>
+    summarise(mean_r = mean(r, na.rm = TRUE), .groups = "drop")
+
+  ggplot(d, aes(x = study, y = r, group = 1)) +
+    geom_hline(data = facet_mean, aes(yintercept = mean_r), linetype = 2, color = "#9ca3af", inherit.aes = FALSE) +
+    geom_ribbon(aes(ymin = ci_low, ymax = ci_high), fill = "#D1D5DB", alpha = 0.5) +
+    geom_line(color = "#1f2937", linewidth = 0.75) +
+    geom_point(color = "#111827", size = 2) +
+    geom_text(aes(label = number(r, accuracy = 0.01)), vjust = -0.7, size = 2.8) +
+    facet_wrap(~item_label, ncol = 2) +
+    scale_x_continuous(breaks = years) +
+    labs(x = "Year", y = "Correlation with civic_test") +
+    theme_conference()
+}
+
+plot_country_bars_year <- function(year_value) {
+  d <- country_item_year |>
+    filter(study == year_value) |>
+    pick_labels("pct") |>
+    group_by(item_label) |>
+    mutate(country_order = rank(pct, ties.method = "first")) |>
+    ungroup() |>
+    mutate(country_facet = paste0(item_label, "__", label_country))
+
+  mean_ref <- d |>
+    group_by(item_label) |>
+    summarise(mean_pct = mean(pct, na.rm = TRUE), .groups = "drop")
+
+  d <- d |>
+    group_by(item_label) |>
+    arrange(pct, .by_group = TRUE) |>
+    mutate(country_facet = factor(country_facet, levels = unique(country_facet))) |>
+    ungroup()
+
+  ggplot(d, aes(x = pct, y = country_facet, fill = region)) +
+    geom_vline(data = mean_ref, aes(xintercept = mean_pct), linetype = 2, color = "#6b7280", inherit.aes = FALSE) +
+    geom_col(width = 0.72) +
+    geom_errorbarh(aes(xmin = ci_low, xmax = ci_high), height = 0.14, linewidth = 0.35) +
+    geom_text(
+      data = d |> filter(label_flag),
+      aes(label = if_else(is.na(iso3), label_country, iso3)),
+      hjust = -0.1,
+      size = 2.4
+    ) +
+    facet_wrap(~item_label, ncol = 2, scales = "free_y") +
+    scale_fill_manual(values = region_colors) +
+    scale_x_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0, 0.14))) +
+    scale_y_discrete(labels = function(x) str_replace(x, "^.*__", "")) +
+    labs(x = "Country percentage with value = 1", y = NULL) +
+    theme_conference() +
+    theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+}
+
+plot_country_change_time <- function() {
+  d <- country_item_year
+
+  facet_mean <- d |>
+    group_by(region, item_label) |>
+    summarise(mean_pct = mean(pct, na.rm = TRUE), .groups = "drop")
+
+  region_trend <- region_item_year
+
+  ggplot(d, aes(x = study, y = pct, group = label_country, color = label_country)) +
+    geom_hline(data = facet_mean, aes(yintercept = mean_pct), linetype = 2, color = "#9ca3af", inherit.aes = FALSE) +
+    geom_ribbon(
+      data = region_trend,
+      aes(ymin = ci_low, ymax = ci_high, group = 1),
+      inherit.aes = FALSE,
+      fill = "#D1D5DB",
+      alpha = 0.28
+    ) +
+    geom_line(data = region_trend, aes(y = pct, group = 1), inherit.aes = FALSE, color = "#111827", linewidth = 0.8) +
+    geom_line(alpha = 0.35, linewidth = 0.5) +
+    geom_point(alpha = 0.4, size = 0.9) +
+    facet_grid(region ~ item_label) +
+    scale_x_continuous(breaks = years) +
+    scale_y_continuous(labels = percent_format(accuracy = 1)) +
+    guides(color = "none") +
+    labs(x = "Year", y = "Country percentage with value = 1") +
+    theme_conference() +
+    theme(strip.text.y = element_text(angle = 0))
+}
+
+plot_country_gini_bars_year <- function(year_value) {
+  d <- country_gini |>
+    filter(study == year_value) |>
+    group_by(study) |>
+    mutate(
+      label_flag = row_number() %in% c(1:8, pmax(n() - 7, 1):n()) | label_country == "Chile"
+    ) |>
+    ungroup()
+
+  if (nrow(d) == 0) {
+    return(
+      ggplot() +
+        annotate("text", x = 0, y = 0, label = "No gini data for this year", size = 5) +
+        theme_void()
+    )
+  }
+
+  mean_ref <- mean(d$gini, na.rm = TRUE)
+
+  ggplot(d, aes(x = gini, y = fct_reorder(label_country, gini), fill = region)) +
+    geom_vline(xintercept = mean_ref, linetype = 2, color = "#6b7280") +
+    geom_col(width = 0.7) +
+    geom_text(
+      data = d |> filter(label_flag),
+      aes(label = if_else(is.na(iso3), label_country, iso3)),
+      hjust = -0.1,
+      size = 2.5
+    ) +
+    scale_fill_manual(values = region_colors) +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.14))) +
+    labs(x = "Gini", y = NULL) +
+    theme_conference()
+}
+
+plot_country_gini_change_time <- function() {
+  d <- country_gini
+
+  if (nrow(d) == 0) {
+    return(
+      ggplot() +
+        annotate("text", x = 0, y = 0, label = "No gini data available", size = 5) +
+        theme_void()
+    )
+  }
+
+  facet_mean <- d |>
+    group_by(region) |>
+    summarise(mean_gini = mean(gini, na.rm = TRUE), .groups = "drop")
+
+  region_trend <- d |>
+    group_by(study, region) |>
+    summarise(
+      n = n(),
+      gini = mean(gini, na.rm = TRUE),
+      sd_gini = sd(gini, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    mutate(
+      se = if_else(is.na(sd_gini), 0, sd_gini / sqrt(pmax(n, 1))),
+      ci_low = gini - 1.96 * se,
+      ci_high = gini + 1.96 * se
+    )
+
+  ggplot(d, aes(x = study, y = gini, group = label_country, color = label_country)) +
+    geom_hline(data = facet_mean, aes(yintercept = mean_gini), linetype = 2, color = "#9ca3af", inherit.aes = FALSE) +
+    geom_ribbon(
+      data = region_trend,
+      aes(ymin = ci_low, ymax = ci_high, group = 1),
+      inherit.aes = FALSE,
+      fill = "#D1D5DB",
+      alpha = 0.3
+    ) +
+    geom_line(data = region_trend, aes(y = gini, group = 1), inherit.aes = FALSE, color = "#111827", linewidth = 0.8) +
+    geom_line(alpha = 0.4, linewidth = 0.55) +
+    geom_point(alpha = 0.45, size = 1) +
+    facet_wrap(~region, ncol = 2) +
+    scale_x_continuous(breaks = years) +
+    guides(color = "none") +
+    labs(x = "Year", y = "Gini") +
+    theme_conference()
+}
+
+plot_gini_effect_year <- function(year_value) {
+  d <- country_item_year |>
+    filter(study == year_value) |>
+    left_join(country_gini |> select(study, label_country, gini), by = c("study", "label_country")) |>
+    filter(!is.na(gini), !is.na(pct))
+
+  if (nrow(d) == 0) {
+    return(
+      ggplot() +
+        annotate("text", x = 0, y = 0, label = "No gini data for this year", size = 5) +
+        theme_void()
+    )
+  }
+
+  type_means <- d |>
+    group_by(item_type) |>
+    summarise(mean_pct = mean(pct, na.rm = TRUE), .groups = "drop")
+
+  ggplot(d, aes(x = gini, y = pct, color = item_label)) +
+    geom_hline(
+      data = type_means,
+      aes(yintercept = mean_pct, color = item_type),
+      linetype = 2,
+      linewidth = 0.8,
+      inherit.aes = FALSE,
+      show.legend = FALSE
+    ) +
+    geom_smooth(method = "lm", se = FALSE, linewidth = 0.8) +
+    scale_y_continuous(labels = percent_format(accuracy = 1)) +
+    scale_color_manual(values = c(item_colors, type_colors)) +
+    labs(x = "Gini", y = "Country percentage with value = 1") +
+    theme_conference()
+}
+
+plot_gini_item_country_lines <- function(year_value, item_label_value) {
+  d <- country_item_year |>
+    filter(study == year_value, item_label == item_label_value) |>
+    left_join(country_gini |> select(study, label_country, gini, iso3), by = c("study", "label_country")) |>
+    filter(!is.na(gini), !is.na(pct)) |>
+    mutate(iso3 = coalesce(iso3.y, iso3.x, iso3_from_country(label_country)))
+
+  if (nrow(d) == 0) {
+    return(
+      ggplot() +
+        annotate("text", x = 0, y = 0, label = "No gini data for this year", size = 5) +
+        theme_void()
+    )
+  }
+
+  x_min <- min(d$gini, na.rm = TRUE)
+  x_pad <- max(0.5, (max(d$gini, na.rm = TRUE) - x_min) * 0.04)
+
+  d <- d |>
+    mutate(x_start = x_min - x_pad)
+
+  ggplot(d, aes(x = gini, y = pct)) +
+    geom_segment(
+      aes(x = x_start, xend = gini, y = pct, yend = pct),
+      color = "#111111",
+      alpha = 0.55,
+      linewidth = 0.35
+    ) +
+    geom_point(color = "#111111", size = 1.5, alpha = 0.75) +
+    geom_smooth(aes(group = 1), method = "lm", se = FALSE, color = "red", linewidth = 1.1) +
+    geom_text_repel(
+      aes(label = iso3),
+      color = "#111111",
+      size = 2.4,
+      max.overlaps = 200,
+      min.segment.length = 0
+    ) +
+    scale_y_continuous(labels = percent_format(accuracy = 1)) +
+    scale_x_continuous(expand = expansion(mult = c(0.08, 0.03))) +
+    labs(x = "Gini", y = "Country percentage with value = 1") +
+    theme_conference()
+}
+```
+
+## Student Level by year {.panel-tabset}
+
+### 1. Percentage of students in value = 1 by item {.panel-tabset}
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=6.5}
+plot_student_overall(1999)
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=6.5}
+plot_student_overall(2009)
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=6.5}
+plot_student_overall(2016)
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=6.5}
+plot_student_overall(2022)
+```
+
+:::
+
+### 2. Comparative plot by gender {.panel-tabset}
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=9}
+plot_student_by_gender(1999)
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=9}
+plot_student_by_gender(2009)
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=9}
+plot_student_by_gender(2016)
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=9}
+plot_student_by_gender(2022)
+```
+
+:::
+
+### 3. Comparative plot by parents_hisced (university vs non-university) {.panel-tabset}
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=9}
+plot_student_by_hisced(1999)
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=9}
+plot_student_by_hisced(2009)
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=9}
+plot_student_by_hisced(2016)
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=9}
+plot_student_by_hisced(2022)
+```
+
+:::
+
+### 4. Correlations with civic_test (PV1CIV)
+
+```{r, fig.width=11, fig.height=5.8}
+plot_student_civic_corr()
+```
+
+## Pooled Changes by time
+
+### 1. Item trend by year (with confidence intervals)
+
+```{r, fig.width=11, fig.height=6.5}
+plot_pooled_trend_items()
+```
+
+### 2. Compact heat map of item percentages by year
+
+```{r, fig.width=10, fig.height=4.8}
+plot_pooled_heatmap()
+```
+
+### 3. Trend by gender, facets by item
+
+```{r, fig.width=11, fig.height=9}
+plot_pooled_trend_gender()
+```
+
+### 4. Trend by parents_hisced, facets by item
+
+```{r, fig.width=11, fig.height=9}
+plot_pooled_trend_hisced()
+```
+
+### 5. Correlation trend of civic_test with items
+
+```{r, fig.width=11, fig.height=9}
+plot_pooled_trend_corr()
+```
+
+## Cross-country plots
+
+### 1. Country item percentages by year (with confidence intervals) {.panel-tabset}
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=12, fig.height=13}
+plot_country_bars_year(1999)
+```
+
+#### 2009
+
+```{r, fig.width=12, fig.height=13}
+plot_country_bars_year(2009)
+```
+
+#### 2016
+
+```{r, fig.width=12, fig.height=13}
+plot_country_bars_year(2016)
+```
+
+#### 2022
+
+```{r, fig.width=12, fig.height=13}
+plot_country_bars_year(2022)
+```
+
+:::
+
+### 3. Country gini levels by year {.panel-tabset}
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=7.5}
+plot_country_gini_bars_year(1999)
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=7.5}
+plot_country_gini_bars_year(2009)
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=7.5}
+plot_country_gini_bars_year(2016)
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=7.5}
+plot_country_gini_bars_year(2022)
+```
+
+:::
+
+## Gini effect on participation
+
+### 1. Gini and item values by year {.panel-tabset}
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_effect_year(1999)
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_effect_year(2009)
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_effect_year(2016)
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_effect_year(2022)
+```
+
+:::
+
+## Cross-country gini-items
+
+### Contact representative
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(1999, "Contact representative")
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2009, "Contact representative")
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2016, "Contact representative")
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2022, "Contact representative")
+```
+
+:::
+
+### Peaceful protest
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(1999, "Peaceful protest")
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2009, "Peaceful protest")
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2016, "Peaceful protest")
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2022, "Peaceful protest")
+```
+
+:::
+
+### Sign petition
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(1999, "Sign petition")
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2009, "Sign petition")
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2016, "Sign petition")
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2022, "Sign petition")
+```
+
+:::
+
+### Spray slogans
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(1999, "Spray slogans")
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2009, "Spray slogans")
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2016, "Spray slogans")
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2022, "Spray slogans")
+```
+
+:::
+
+### Block traffic
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(1999, "Block traffic")
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2009, "Block traffic")
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2016, "Block traffic")
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2022, "Block traffic")
+```
+
+:::
+
+### Occupy buildings
+
+::: {.panel-tabset}
+
+#### 1999
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(1999, "Occupy buildings")
+```
+
+#### 2009
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2009, "Occupy buildings")
+```
+
+#### 2016
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2016, "Occupy buildings")
+```
+
+#### 2022
+
+```{r, fig.width=11, fig.height=7.5}
+plot_gini_item_country_lines(2022, "Occupy buildings")
+```
+
+:::
+
+## Validation checks
+
+```{r}
+check_binary <- db_clean |>
+  summarise(across(ends_with("_bin"), ~ all(.x %in% c(0, 1, NA), na.rm = TRUE)))
+
+check_missing_plot_inputs <- item_long |>
+  summarise(
+    pct_missing_value = mean(is.na(value)),
+    pct_missing_gender = mean(is.na(gender)),
+    pct_missing_hisced = mean(is.na(hisced_group)),
+    pct_missing_civic = mean(is.na(civic_test)),
+    pct_missing_gini = mean(is.na(gini))
+  )
+
+knitr::kable(check_binary, caption = "Binary coding check")
+knitr::kable(check_missing_plot_inputs, digits = 3, caption = "Missingness in plot inputs")
+```

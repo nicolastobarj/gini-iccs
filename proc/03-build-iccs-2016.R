@@ -63,9 +63,12 @@ build_iccs_2016 <- function(
     label_country <- dplyr::coalesce(label_country, map_iccs2016_country_code(file_code))
 
     gender_raw <- as.numeric(pick_var(df, c("S_GENDER", "s_gender"), required = FALSE))
+    has_zero_code <- any(gender_raw == 0, na.rm = TRUE)
     gender <- case_when(
-      gender_raw == 2 ~ 1, # female
-      gender_raw == 1 ~ 0, # male
+      has_zero_code & gender_raw == 0 ~ 1, # female (0/1 coding)
+      has_zero_code & gender_raw == 1 ~ 0, # male (0/1 coding)
+      !has_zero_code & gender_raw == 2 ~ 1, # female (1/2 coding fallback)
+      !has_zero_code & gender_raw == 1 ~ 0, # male (1/2 coding fallback)
       gender_raw %in% c(8, 9, 98, 99) ~ NA_real_,
       TRUE ~ NA_real_
     )

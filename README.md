@@ -86,6 +86,19 @@ This file contains pooled student-level data across study waves and includes `st
 - `bib/`: bibliography files.
 - `2022_INVALSI/`: legacy/original project materials, including historical Stata workflow references.
 
+## Analyses Reports
+
+The analyses area will host visualizations, statistical analyses, and models. The first published report is:
+
+- `analyses/items_descriptions.qmd` (source)
+- `analyses/items_descriptions.html` (rendered report)
+
+GitHub Pages URL pattern for this report:
+
+- `https://<your-user>.github.io/<your-repo>/analyses/items_descriptions.html`
+
+Replace `<your-user>` and `<your-repo>` with your repository values after enabling GitHub Pages.
+
 ## Raw Data Locations
 
 Expected raw data folders:
