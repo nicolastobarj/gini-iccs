@@ -101,8 +101,6 @@ dimensions <- tibble(
   n_columns = ncol(db),
   object_size_mb = round(as.numeric(object.size(db)) / 1024^2, 2)
 )
-
-render_kable_scroll(dimensions, "Dimensions of the pooled database", max_height = "260px")
 ```
 
 ## 2. Countries by Year and Total Number of Countries
@@ -119,8 +117,6 @@ countries_by_year <- db |>
     .groups = "drop"
   ) |>
   arrange(study)
-
-render_kable_scroll(countries_by_year, "Countries by year and number of countries", max_height = "360px")
 ```
 
 ## 3. Statistical Distribution of Student-Level Variables

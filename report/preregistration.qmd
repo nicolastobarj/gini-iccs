@@ -1,0 +1,244 @@
+---
+title: "OSF Secondary Data Preregistration: Inequality and Youth Protest Disposition in ICCS"
+author: "Daniel Miranda & Nicolás Tobar"
+date: "2026-08-19"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: false
+  warning: false
+  message: false
+  error: true
+---
+
+## Study Scope
+
+This preregistration defines the confirmatory analysis plan for a secondary-data study using four repeated cross-sectional waves of ICCS (1999, 2009, 2016, 2022). The unit of observation is the individual student.
+
+The substantive goal is to test whether country-level economic inequality is associated with students' willingness to engage in protest behavior, with theory-informed controls at the individual level.
+
+## Question 1. What is the hypothesis being tested?
+
+### Primary contextual hypotheses
+
+- H1a (between-country): Countries with higher average inequality across observed ICCS waves will show higher average student protest disposition compared with countries with lower average inequality.
+- H1b (within-country): Increases of inequality within the same country across waves will be associated with an uprising of student protest disposition, and vice-versa.
+
+### Individual-level hypotheses
+
+- H2: Gender is associated with protest disposition.
+- H3: Increase on civic knowledge is negatively associated with protest disposition.
+- H4: Having university-educated parents (parents_hisced) is associated with an increase on protest disposition.
+
+Directional expectations will be interpreted in light of theory and prior literature; if theory is insufficiently specific for sign direction, this will be stated explicitly in reporting.
+
+## Question 2. How will the key variables be operationalized?
+
+### Outcomes
+
+Primary dependent variables are two ordered 4-category student items treated as approximately continuous in the primary model:
+
+- peaceful: willingness/disposition for peaceful protest.
+- trafic: willingness/disposition for blocking traffic (dataset variable name is trafic; any reference to traffic in text maps to trafic in data).
+
+Scale range is 1 to 4. The primary estimator treats these as continuous outcomes; ordinal modeling is preregistered as robustness.
+
+### Contextual predictor (country-year)
+
+- gini: disposable-income Gini at country-year level.
+
+Primary analysis uses a within-between decomposition:
+
+$$
+\text{Gini}_{between,c} = \overline{\text{Gini}_{ct}} \text{ across observed waves for country } c
+$$
+
+$$
+\text{Gini}_{within,ct} = \text{Gini}_{ct} - \text{Gini}_{between,c}
+$$
+
+Both components are included jointly in the primary model.
+
+### Individual covariates
+
+- gender
+  - role: individual-level predictor.
+  - measurement: binary.
+  - coding and reference: 1=female, 0=male (reference category = male).
+  - missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.
+  - centering: none (binary indicator retained in original coding).
+- civic_test
+  - role: individual-level predictor.
+  - measurement: continuous harmonized civic knowledge score (PV1CIV/KNOWLMLE lineage).
+  - coding and reference: numeric continuous, no categorical reference.
+  - missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.
+  - centering/standardization: final rule frozen before model estimation and applied consistently across outcomes.
+- parents_hisced
+  - role: individual-level predictor.
+  - measurement: binary.
+  - coding and reference: 1=university parents, 0=non-university (reference category = non-university).
+  - missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.
+  - centering: none (binary indicator retained in original coding).
+
+### Identifiers and design variables
+
+- idstudent, idcountry, study (wave), and country-wave context identifiers.
+- weights as harmonized student total weight in pooled data.
+- Replicate-weight, strata, and PSU variables will be taken from official wave-specific ICCS documentation and source files, then frozen in the analysis log before model estimation.
+
+## Question 3. What is the source of the data included in the analyses?
+
+- ICCS/CivED individual-level student data from IEA waves: 1999, 2009, 2016, 2022.
+- Contextual inequality data from SWIID (country-year Gini).
+- Harmonized analysis dataset from the project processing pipeline (pooled student-level file) linked to country-year Gini.
+
+## Question 4. How will these data be obtained?
+
+- ICCS/CivED data are obtained from official IEA releases used in this project.
+- SWIID data are obtained from the SWIID release used in this project.
+- Data integration is reproducible through the project processing scripts and documented country-name harmonization rules.
+- Gini assignment follows a prespecified country-year matching rule; no retrospective matching based on substantive results is allowed.
+
+## Question 5. Are there any exclusion criteria for the data?
+
+### Observation-level inclusion
+
+Primary analysis includes all student observations with non-missing:
+
+- outcome (peaceful or trafic, depending on model);
+- Gini decomposition terms;
+- prespecified individual covariates;
+- required design information (weights and any required variance-estimation fields).
+
+### Exclusion principles
+
+- Countries are not excluded because they are absent in some waves.
+- Country-wave nonparticipation is treated as structural design imbalance, not ordinary missingness.
+- Countries observed in only one wave remain eligible for the primary model; they contribute to between-country estimation but limited within-country change information.
+
+## Question 6. What statistical analyses will be performed?
+
+### Data structure
+
+The study is repeated cross-sectional multilevel data:
+
+Student -> Country x Wave.
+
+Students are not followed longitudinally across waves. Country participation across waves is unbalanced.
+
+### Primary specification
+
+For each outcome (peaceful and trafic), estimate a linear mixed-effects model with:
+
+- fixed effects: Gini_between, Gini_within, gender, civic_test, parents_hisced, and wave fixed effects;
+- random effects: country random intercept and country-wave random intercept/context term;
+- wave represented as categorical fixed effects for 1999, 2009, 2016, 2022.
+- conceptual random-effects syntax in R: (1 | country) + (1 | country:wave).
+- dataset-mapped syntax in this project: (1 | idcountry) + (1 | idcountry:study).
+- wave enters as a factor (reference level fixed a priori to 1999 unless design-audit constraints require a documented alternative).
+
+Conceptual model:
+
+$$
+Y_{ict} = \beta_0 + \beta_B \text{Gini}_{between,c} + \beta_W \text{Gini}_{within,ct} + X_{ict}\beta + \gamma_t + u_c + v_{ct} + \varepsilon_{ict}
+$$
+
+where $X_{ict}$ includes gender, civic_test, and parents_hisced.
+
+### Model constraints
+
+- Do not replace wave fixed effects with a random year intercept.
+- Do not specify year as a level above country.
+- Do not use raw Gini as the only contextual term in the primary model.
+
+### Centering and scaling
+
+- Gini uses explicit within-between decomposition.
+- Individual covariates will be prespecified as coded in the harmonized file; any standardization decision will be fixed before estimation and applied consistently across outcomes.
+
+### Complex survey design integration
+
+Primary estimation must respect ICCS complex sampling design. Before substantive estimation, the analysis will audit official ICCS technical documentation by wave to identify:
+
+- student sampling weight;
+- school/institution sampling information;
+- strata and PSU definitions;
+- replicate weights/replication method, if provided;
+- wave-specific variance-estimation requirements.
+
+The final estimator will prioritize official IEA guidance for variance estimation. If no single estimator can jointly represent all required multilevel and survey-design components, the methodological trade-off will be documented and an appropriate alternative estimator will be included as sensitivity analysis.
+
+### Software
+
+All analyses will be implemented in R. Package selection will be finalized only after confirming support for multilevel random effects and ICCS design-based inference requirements.
+
+## Question 7. What are the criteria for confirming or disconfirming the hypotheses?
+
+- Two-sided tests with alpha = 0.05.
+- 95% confidence intervals for all focal coefficients.
+- Primary evidence will be based on sign, magnitude, and uncertainty of:
+  - Gini_between coefficient;
+  - Gini_within coefficient;
+  - prespecified individual-covariate coefficients.
+- Interpretation will not rely on p-values alone.
+- Effective contextual information is determined by country-wave variation, not by student count alone.
+
+## Question 8. Have the analyses been previously validated on a subset of the data?
+
+The project has prior data-processing and harmonization checks, including pooled-data construction and descriptive validation. These prior checks are acknowledged as preprocessing validation and not treated as confirmatory hypothesis tests.
+
+No additional model tuning based on outcome-specific confirmatory results will be performed prior to preregistered model execution.
+
+## Question 9. What is already known about the data that could be relevant to the hypotheses?
+
+- The country-wave panel is unbalanced because ICCS participation differs by wave.
+- Contextual Gini varies at country-year level; contextual effective sample size is country-wave based.
+- Harmonization across waves requires explicit mapping of item names/coding and country identifiers.
+- Complex survey design features differ by wave and require official documentation review before final estimation settings are frozen.
+
+## Question 10. Provide a brief timeline for the different stages of the preregistration.
+
+1. Finalize preregistration text and freeze variable definitions and matching rules.
+2. Complete wave-by-wave ICCS design audit (weights, strata, PSU, replication method).
+3. Lock primary estimator and design-based variance procedure in R.
+4. Build analysis-ready modeling dataset with Gini within-between terms.
+5. Run preregistered primary models for peaceful and trafic.
+6. Run preregistered robustness analyses.
+7. Compile and report results with explicit confirmatory versus robustness labeling.
+
+## Prespecified Missing-Data Rules
+
+- Missing outcome: observation excluded from the corresponding outcome model.
+- Missing Gini or Gini components: excluded from primary model.
+- Missing individual covariates: handled by prespecified complete-case rule unless design-consistent imputation is preregistered before estimation.
+- Missing weights/design variables: observation excluded from design-based primary estimator.
+- Structural nonparticipation of country-wave cells: not treated as individual missingness.
+
+If multiple imputation is adopted, it will be prespecified before estimation with explicit handling of clustering and survey-design variables.
+
+## Prespecified Robustness Analyses
+
+A. Restricted participation sample: countries observed in at least two waves.
+
+B. Country fixed-effects model with wave fixed effects to emphasize within-country inequality variation.
+
+C. Ordinal sensitivity model for 4-category outcomes.
+
+D. Alternative contextual specification using raw country-year Gini (sensitivity only).
+
+E. Alternative variance-estimation approach that appropriately accounts for clustered and complex survey design, where technically feasible.
+
+## Country-Wave Gini Matching Protocol
+
+- Source: SWIID country-year Gini series used by project pipeline.
+- Harmonization: prespecified country identifier/name crosswalk.
+- Year rule: assign Gini by the ICCS observation year for each country-wave.
+- Missing Gini handling: prespecified exclusion or justified temporal rule; no post hoc choice based on results.
+- Boundary/name differences: handled through documented mapping rules.
+- Any interpolation or nearest-year substitution must be explicitly justified and declared before model estimation.
+
+## Methodological Constraint Statement
+
+This preregistration does not permit simplifying the primary analysis to a convenience unweighted mixed model that ignores ICCS design-based variance requirements. If implementation constraints arise, the trade-off will be explicitly documented and complemented by a design-appropriate sensitivity framework.

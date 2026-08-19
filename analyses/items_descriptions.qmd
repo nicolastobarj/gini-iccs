@@ -29,8 +29,8 @@ When GitHub Pages is enabled for the repository, replace `<your-user>` and `<you
 
 Coding used in this report:
 
-- Values 1 and 2 are recoded to 0.
-- Values 3 and 4 are recoded to 1.
+- 1999: values 1 and 2 are recoded to 0, values 3 and 4 are recoded to 1.
+- 2009, 2016, 2022: values 1 and 2 are recoded to 1, values 3 and 4 are recoded to 0.
 - Missing values are never displayed in plots.
 
 ```{r}
@@ -155,10 +155,12 @@ theme_conference <- function() {
     )
 }
 
-dichotomize_item <- function(x) {
+dichotomize_item <- function(x, study) {
   case_when(
-    x %in% c(1, 2) ~ 0,
-    x %in% c(3, 4) ~ 1,
+    study == 1999 & x %in% c(3, 4) ~ 1,
+    study == 1999 & x %in% c(1, 2) ~ 0,
+    study %in% c(2009, 2016, 2022) & x %in% c(1, 2) ~ 1,
+    study %in% c(2009, 2016, 2022) & x %in% c(3, 4) ~ 0,
     TRUE ~ NA_real_
   )
 }
@@ -244,7 +246,7 @@ db_clean <- db |>
   ) |>
   left_join(region_lookup, by = "country_key") |>
   mutate(region = coalesce(region, "Unknown")) |>
-  mutate(across(all_of(item_vars), dichotomize_item, .names = "{.col}_bin"))
+  mutate(across(all_of(item_vars), ~ dichotomize_item(.x, study), .names = "{.col}_bin"))
 
 item_long <- db_clean |>
   select(
@@ -319,7 +321,7 @@ plot_student_overall <- function(year_value) {
     group_by(item_type) |>
     summarise(mean_pct = mean(pct, na.rm = TRUE), .groups = "drop")
 
-  ggplot(d, aes(x = pct, y = fct_reorder(item_label, pct), fill = item_type)) +
+  ggplot(d, aes(x = pct, y = item_label, fill = item_type)) +
     geom_vline(
       data = type_means,
       aes(xintercept = mean_pct, color = item_type),
