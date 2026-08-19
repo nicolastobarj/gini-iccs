@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Political Socialization Project">
+<meta name="author" content="Daniel Miranda &amp; Nicolás Tobar">
 <meta name="dcterms.date" content="2026-08-19">
 
 <title>OSF Secondary Data Preregistration: Inequality and Youth Protest Disposition in ICCS</title>
@@ -112,7 +112,6 @@ window.Quarto = {
   <li><a href="#prespecified-missing-data-rules" id="toc-prespecified-missing-data-rules" class="nav-link" data-scroll-target="#prespecified-missing-data-rules"><span class="header-section-number">12</span> Prespecified Missing-Data Rules</a></li>
   <li><a href="#prespecified-robustness-analyses" id="toc-prespecified-robustness-analyses" class="nav-link" data-scroll-target="#prespecified-robustness-analyses"><span class="header-section-number">13</span> Prespecified Robustness Analyses</a></li>
   <li><a href="#country-wave-gini-matching-protocol" id="toc-country-wave-gini-matching-protocol" class="nav-link" data-scroll-target="#country-wave-gini-matching-protocol"><span class="header-section-number">14</span> Country-Wave Gini Matching Protocol</a></li>
-  <li><a href="#methodological-constraint-statement" id="toc-methodological-constraint-statement" class="nav-link" data-scroll-target="#methodological-constraint-statement"><span class="header-section-number">15</span> Methodological Constraint Statement</a></li>
   </ul>
 </nav>
 </div>
@@ -130,7 +129,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Political Socialization Project </p>
+             <p>Daniel Miranda &amp; Nicolás Tobar </p>
           </div>
   </div>
     
@@ -159,18 +158,17 @@ window.Quarto = {
 <section id="primary-contextual-hypotheses" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="primary-contextual-hypotheses"><span class="header-section-number">2.1</span> Primary contextual hypotheses</h3>
 <ul>
-<li>H1a (between-country): Countries with higher average inequality across observed ICCS waves will show different average student protest disposition compared with countries with lower average inequality.</li>
-<li>H1b (within-country): Increases or decreases in inequality within the same country across waves will be associated with corresponding changes in student protest disposition.</li>
+<li>H1a (between-country): Countries with higher average inequality across observed ICCS waves will show higher average student protest disposition compared with countries with lower average inequality.</li>
+<li>H1b (within-country): Increases of inequality within the same country across waves will be associated with an uprising of student protest disposition, and vice-versa.</li>
 </ul>
 </section>
 <section id="individual-level-hypotheses" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="individual-level-hypotheses"><span class="header-section-number">2.2</span> Individual-level hypotheses</h3>
 <ul>
 <li>H2: Gender is associated with protest disposition.</li>
-<li>H3: Civic knowledge (pc1civ/civic_test) is associated with protest disposition.</li>
-<li>H4: Having university-educated parents (parents_hisced) is associated with protest disposition.</li>
+<li>H3: Increase on civic knowledge is negatively associated with protest disposition.</li>
+<li>H4: Having university-educated parents (parents_hisced) is associated with an increase on protest disposition.</li>
 </ul>
-<p>Directional expectations will be interpreted in light of theory and prior literature; if theory is insufficiently specific for sign direction, this will be stated explicitly in reporting.</p>
 </section>
 </section>
 <section id="question-2.-how-will-the-key-variables-be-operationalized" class="level2" data-number="3">
@@ -180,9 +178,35 @@ window.Quarto = {
 <p>Primary dependent variables are two ordered 4-category student items treated as approximately continuous in the primary model:</p>
 <ul>
 <li>peaceful: willingness/disposition for peaceful protest.</li>
-<li>trafic: willingness/disposition for blocking traffic (dataset variable name is trafic; any reference to traffic in text maps to trafic in data).</li>
+<li>trafic: willingness/disposition for blocking traffic.</li>
 </ul>
-<p>Scale range is 1 to 4. The primary estimator treats these as continuous outcomes; ordinal modeling is preregistered as robustness.</p>
+<p>Common question stem across waves (as used in project documentation and the INVALSI 2022 presentation):</p>
+<ul>
+<li>There are many different ways how citizens may express their opinions about important issues in society. Would you take part in any of the following activities to express your opinion in the future?</li>
+</ul>
+<p>Original wave-specific variables and item phrases for peaceful:</p>
+<ul>
+<li>1999 (CivED): BS5M9, label: PARTICIP.IN A NON-VIOLENT PROTEST MARCH.</li>
+<li>2009 (ICCS): IS2P31D, label: Peaceful march.</li>
+<li>2016 (ICCS): IS3G30C, label: Peaceful march.</li>
+<li>2022 (ICCS): IS4G31C, label: Peaceful march.</li>
+</ul>
+<p>Original wave-specific variables and item phrases for trafic:</p>
+<ul>
+<li>1999 (CivED): BS5M11, label: BLOCK TRAFFIC AS A FORM OF PROTEST.</li>
+<li>2009 (ICCS): IS2P31H, label: Block traffic.</li>
+<li>2016 (ICCS): IS3G30J, label: Block traffic.</li>
+<li>2022 (ICCS): IS4G31L, label: Block traffic.</li>
+</ul>
+<p>Original 4-category substantive response scale (all waves):</p>
+<ul>
+<li>1 = I would certainly not do this</li>
+<li>2 = I would probably not do this</li>
+<li>3 = I would probably do this</li>
+<li>4 = I would certainly do this</li>
+</ul>
+<p>Wave-specific non-substantive codes (for example, 0 and 8 in CivED; 0/8/9/98/99 depending on wave files) are treated as missing according to the harmonization rules.</p>
+<p>The primary estimator treats these outcomes as continuous; categorical/ordinal treatment is prespecified as robustness.</p>
 </section>
 <section id="contextual-predictor-country-year" class="level3" data-number="3.2">
 <h3 data-number="3.2" class="anchored" data-anchor-id="contextual-predictor-country-year"><span class="header-section-number">3.2</span> Contextual predictor (country-year)</h3>
@@ -205,6 +229,20 @@ window.Quarto = {
 <ul>
 <li>role: individual-level predictor.</li>
 <li>measurement: binary.</li>
+<li>original raw variables and labels:
+<ul>
+<li>1999: BSGGEND/ITSEX, label includes GIRL OR BOY.</li>
+<li>2009: SGENDER, label Gender.</li>
+<li>2016: S_GENDER, label Gender.</li>
+<li>2022: SD_GENDER, label Gender.</li>
+</ul></li>
+<li>original raw coding by wave before harmonization:
+<ul>
+<li>1999: 1=girl, 2=boy.</li>
+<li>2009: 1=female, 0=male.</li>
+<li>2016: 2=female, 1=male (with fallback handling when country files use 0/1 coding).</li>
+<li>2022: 0=female, 1=male.</li>
+</ul></li>
 <li>coding and reference: 1=female, 0=male (reference category = male).</li>
 <li>missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.</li>
 <li>centering: none (binary indicator retained in original coding).</li>
@@ -213,6 +251,14 @@ window.Quarto = {
 <ul>
 <li>role: individual-level predictor.</li>
 <li>measurement: continuous harmonized civic knowledge score (PV1CIV/KNOWLMLE lineage).</li>
+<li>original raw variables and labels:
+<ul>
+<li>1999: KNOWLMLE/KNOCG_ML, label Civic knowledge score.</li>
+<li>2009: PV1CIV, label Plausible value civic knowledge.</li>
+<li>2016: PV1CIV, label Plausible value civic knowledge.</li>
+<li>2022: PV1CIV, label Plausible value civic knowledge.</li>
+</ul></li>
+<li>raw version note: this is a test-score measure (plausible value/scale score), not a single questionnaire item with categorical response options.</li>
 <li>coding and reference: numeric continuous, no categorical reference.</li>
 <li>missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.</li>
 <li>centering/standardization: final rule frozen before model estimation and applied consistently across outcomes.</li>
@@ -221,6 +267,18 @@ window.Quarto = {
 <ul>
 <li>role: individual-level predictor.</li>
 <li>measurement: binary.</li>
+<li>original raw variables and labels:
+<ul>
+<li>1999: BSGEDUM and BSGEDUF, labels HOW FAR IN SCHOOL DID YOUR MOTHER GO and HOW FAR IN SCHOOL DID YOUR FATHER GO.</li>
+<li>2009: HISCED, label Highest parental education.</li>
+<li>2016: S_HISCED, label Highest parental education.</li>
+<li>2022: S_HISCED, label Highest parental education.</li>
+</ul></li>
+<li>original raw version:
+<ul>
+<li>1999: separate mother and father education categories, harmonized and combined using max(mother, father).</li>
+<li>2009, 2016, 2022: single highest-parental-education field.</li>
+</ul></li>
 <li>coding and reference: 1=university parents, 0=non-university (reference category = non-university).</li>
 <li>missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.</li>
 <li>centering: none (binary indicator retained in original coding).</li>
@@ -242,13 +300,20 @@ window.Quarto = {
 <li>ICCS/CivED individual-level student data from IEA waves: 1999, 2009, 2016, 2022.</li>
 <li>Contextual inequality data from SWIID (country-year Gini).</li>
 <li>Harmonized analysis dataset from the project processing pipeline (pooled student-level file) linked to country-year Gini.</li>
+<li>Project repository for analyses and processing pipeline: <a href="https://github.com/nicolastobarj/gini-iccs">nicolastobarj/gini-iccs</a>.</li>
 </ul>
 </section>
 <section id="question-4.-how-will-these-data-be-obtained" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="question-4.-how-will-these-data-be-obtained"><span class="header-section-number">5</span> Question 4. How will these data be obtained?</h2>
 <ul>
-<li>ICCS/CivED data are obtained from official IEA releases used in this project.</li>
-<li>SWIID data are obtained from the SWIID release used in this project.</li>
+<li>ICCS/CivED data are obtained from official IEA repository webpages:
+<ul>
+<li>CivED 1999: https://www.iea.nl/data-tools/repository/cived-1999</li>
+<li>ICCS 2009: https://www.iea.nl/data-tools/repository/iccs-2009</li>
+<li>ICCS 2016: https://www.iea.nl/data-tools/repository/iccs-2016</li>
+<li>ICCS 2022: https://www.iea.nl/data-tools/repository/iccs-2022</li>
+</ul></li>
+<li>SWIID data are obtained from the SWIID webpage: https://fsolt.org/swiid/</li>
 <li>Data integration is reproducible through the project processing scripts and documented country-name harmonization rules.</li>
 <li>Gini assignment follows a prespecified country-year matching rule; no retrospective matching based on substantive results is allowed.</li>
 </ul>
@@ -289,7 +354,8 @@ window.Quarto = {
 <li>fixed effects: Gini_between, Gini_within, gender, civic_test, parents_hisced, and wave fixed effects;</li>
 <li>random effects: country random intercept and country-wave random intercept/context term;</li>
 <li>wave represented as categorical fixed effects for 1999, 2009, 2016, 2022.</li>
-<li>conceptual random-effects syntax in R: (1 | idcountry) + (1 | idcountry:study).</li>
+<li>conceptual random-effects syntax in R: (1 | country) + (1 | country:wave).</li>
+<li>dataset-mapped syntax in this project: (1 | idcountry) + (1 | idcountry:study).</li>
 <li>wave enters as a factor (reference level fixed a priori to 1999 unless design-audit constraints require a documented alternative).</li>
 </ul>
 <p>Conceptual model:</p>
@@ -348,6 +414,7 @@ Y_{ict} = \beta_0 + \beta_B \text{Gini}_{between,c} + \beta_W \text{Gini}_{withi
 <section id="question-8.-have-the-analyses-been-previously-validated-on-a-subset-of-the-data" class="level2" data-number="9">
 <h2 data-number="9" class="anchored" data-anchor-id="question-8.-have-the-analyses-been-previously-validated-on-a-subset-of-the-data"><span class="header-section-number">9</span> Question 8. Have the analyses been previously validated on a subset of the data?</h2>
 <p>The project has prior data-processing and harmonization checks, including pooled-data construction and descriptive validation. These prior checks are acknowledged as preprocessing validation and not treated as confirmatory hypothesis tests.</p>
+<p>A previous presentation on <a href="https://nicolastobarj.github.io/gini-iccs/INVALSI_2022/presentation/INVALSI_2022.html">INVALSI 2022</a> was used as project background, prior analyses were conducted on pre-2022 IEA waves (1999, 2009, 2016), and a simpler modeling strategy was used for prediction of pacific actions. Those earlier analyses did not implement the current full preregistered specification and excluded 2022 data.</p>
 <p>No additional model tuning based on outcome-specific confirmatory results will be performed prior to preregistered model execution.</p>
 </section>
 <section id="question-9.-what-is-already-known-about-the-data-that-could-be-relevant-to-the-hypotheses" class="level2" data-number="10">
@@ -362,7 +429,6 @@ Y_{ict} = \beta_0 + \beta_B \text{Gini}_{between,c} + \beta_W \text{Gini}_{withi
 <section id="question-10.-provide-a-brief-timeline-for-the-different-stages-of-the-preregistration." class="level2" data-number="11">
 <h2 data-number="11" class="anchored" data-anchor-id="question-10.-provide-a-brief-timeline-for-the-different-stages-of-the-preregistration."><span class="header-section-number">11</span> Question 10. Provide a brief timeline for the different stages of the preregistration.</h2>
 <ol type="1">
-<li>Finalize preregistration text and freeze variable definitions and matching rules.</li>
 <li>Complete wave-by-wave ICCS design audit (weights, strata, PSU, replication method).</li>
 <li>Lock primary estimator and design-based variance procedure in R.</li>
 <li>Build analysis-ready modeling dataset with Gini within-between terms.</li>
@@ -378,7 +444,6 @@ Y_{ict} = \beta_0 + \beta_B \text{Gini}_{between,c} + \beta_W \text{Gini}_{withi
 <li>Missing Gini or Gini components: excluded from primary model.</li>
 <li>Missing individual covariates: handled by prespecified complete-case rule unless design-consistent imputation is preregistered before estimation.</li>
 <li>Missing weights/design variables: observation excluded from design-based primary estimator.</li>
-<li>Structural nonparticipation of country-wave cells: not treated as individual missingness.</li>
 </ul>
 <p>If multiple imputation is adopted, it will be prespecified before estimation with explicit handling of clustering and survey-design variables.</p>
 </section>
@@ -386,9 +451,7 @@ Y_{ict} = \beta_0 + \beta_B \text{Gini}_{between,c} + \beta_W \text{Gini}_{withi
 <h2 data-number="13" class="anchored" data-anchor-id="prespecified-robustness-analyses"><span class="header-section-number">13</span> Prespecified Robustness Analyses</h2>
 <p>A. Restricted participation sample: countries observed in at least two waves.</p>
 <p>B. Country fixed-effects model with wave fixed effects to emphasize within-country inequality variation.</p>
-<p>C. Ordinal sensitivity model for 4-category outcomes.</p>
-<p>D. Alternative contextual specification using raw country-year Gini (sensitivity only).</p>
-<p>E. Alternative variance-estimation approach that appropriately accounts for clustered and complex survey design, where technically feasible.</p>
+<p>C. Categorical sensitivity model for binary outcomes.</p>
 </section>
 <section id="country-wave-gini-matching-protocol" class="level2" data-number="14">
 <h2 data-number="14" class="anchored" data-anchor-id="country-wave-gini-matching-protocol"><span class="header-section-number">14</span> Country-Wave Gini Matching Protocol</h2>
@@ -400,10 +463,6 @@ Y_{ict} = \beta_0 + \beta_B \text{Gini}_{between,c} + \beta_W \text{Gini}_{withi
 <li>Boundary/name differences: handled through documented mapping rules.</li>
 <li>Any interpolation or nearest-year substitution must be explicitly justified and declared before model estimation.</li>
 </ul>
-</section>
-<section id="methodological-constraint-statement" class="level2" data-number="15">
-<h2 data-number="15" class="anchored" data-anchor-id="methodological-constraint-statement"><span class="header-section-number">15</span> Methodological Constraint Statement</h2>
-<p>This preregistration does not permit simplifying the primary analysis to a convenience unweighted mixed model that ignores ICCS design-based variance requirements. If implementation constraints arise, the trade-off will be explicitly documented and complemented by a design-appropriate sensitivity framework.</p>
 </section>
 
 </main>

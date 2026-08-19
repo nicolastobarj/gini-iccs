@@ -32,8 +32,6 @@ The substantive goal is to test whether country-level economic inequality is ass
 - H3: Increase on civic knowledge is negatively associated with protest disposition.
 - H4: Having university-educated parents (parents_hisced) is associated with an increase on protest disposition.
 
-Directional expectations will be interpreted in light of theory and prior literature; if theory is insufficiently specific for sign direction, this will be stated explicitly in reporting.
-
 ## Question 2. How will the key variables be operationalized?
 
 ### Outcomes
@@ -41,9 +39,36 @@ Directional expectations will be interpreted in light of theory and prior litera
 Primary dependent variables are two ordered 4-category student items treated as approximately continuous in the primary model:
 
 - peaceful: willingness/disposition for peaceful protest.
-- trafic: willingness/disposition for blocking traffic (dataset variable name is trafic; any reference to traffic in text maps to trafic in data).
+- trafic: willingness/disposition for blocking traffic.
 
-Scale range is 1 to 4. The primary estimator treats these as continuous outcomes; ordinal modeling is preregistered as robustness.
+Common question stem across waves (as used in project documentation and the INVALSI 2022 presentation):
+
+- There are many different ways how citizens may express their opinions about important issues in society. Would you take part in any of the following activities to express your opinion in the future?
+
+Original wave-specific variables and item phrases for peaceful:
+
+- 1999 (CivED): BS5M9, label: PARTICIP.IN A NON-VIOLENT PROTEST MARCH.
+- 2009 (ICCS): IS2P31D, label: Peaceful march.
+- 2016 (ICCS): IS3G30C, label: Peaceful march.
+- 2022 (ICCS): IS4G31C, label: Peaceful march.
+
+Original wave-specific variables and item phrases for trafic:
+
+- 1999 (CivED): BS5M11, label: BLOCK TRAFFIC AS A FORM OF PROTEST.
+- 2009 (ICCS): IS2P31H, label: Block traffic.
+- 2016 (ICCS): IS3G30J, label: Block traffic.
+- 2022 (ICCS): IS4G31L, label: Block traffic.
+
+Original 4-category substantive response scale (all waves):
+
+- 1 = I would certainly not do this
+- 2 = I would probably not do this
+- 3 = I would probably do this
+- 4 = I would certainly do this
+
+Wave-specific non-substantive codes (for example, 0 and 8 in CivED; 0/8/9/98/99 depending on wave files) are treated as missing according to the harmonization rules.
+
+The primary estimator treats these outcomes as continuous; categorical/ordinal treatment is prespecified as robustness.
 
 ### Contextual predictor (country-year)
 
@@ -66,18 +91,42 @@ Both components are included jointly in the primary model.
 - gender
   - role: individual-level predictor.
   - measurement: binary.
+  - original raw variables and labels:
+    - 1999: BSGGEND/ITSEX, label includes GIRL OR BOY.
+    - 2009: SGENDER, label Gender.
+    - 2016: S_GENDER, label Gender.
+    - 2022: SD_GENDER, label Gender.
+  - original raw coding by wave before harmonization:
+    - 1999: 1=girl, 2=boy.
+    - 2009: 1=female, 0=male.
+    - 2016: 2=female, 1=male (with fallback handling when country files use 0/1 coding).
+    - 2022: 0=female, 1=male.
   - coding and reference: 1=female, 0=male (reference category = male).
   - missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.
   - centering: none (binary indicator retained in original coding).
 - civic_test
   - role: individual-level predictor.
   - measurement: continuous harmonized civic knowledge score (PV1CIV/KNOWLMLE lineage).
+  - original raw variables and labels:
+    - 1999: KNOWLMLE/KNOCG_ML, label Civic knowledge score.
+    - 2009: PV1CIV, label Plausible value civic knowledge.
+    - 2016: PV1CIV, label Plausible value civic knowledge.
+    - 2022: PV1CIV, label Plausible value civic knowledge.
+  - raw version note: this is a test-score measure (plausible value/scale score), not a single questionnaire item with categorical response options.
   - coding and reference: numeric continuous, no categorical reference.
   - missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.
   - centering/standardization: final rule frozen before model estimation and applied consistently across outcomes.
 - parents_hisced
   - role: individual-level predictor.
   - measurement: binary.
+  - original raw variables and labels:
+    - 1999: BSGEDUM and BSGEDUF, labels HOW FAR IN SCHOOL DID YOUR MOTHER GO and HOW FAR IN SCHOOL DID YOUR FATHER GO.
+    - 2009: HISCED, label Highest parental education.
+    - 2016: S_HISCED, label Highest parental education.
+    - 2022: S_HISCED, label Highest parental education.
+  - original raw version:
+    - 1999: separate mother and father education categories, harmonized and combined using max(mother, father).
+    - 2009, 2016, 2022: single highest-parental-education field.
   - coding and reference: 1=university parents, 0=non-university (reference category = non-university).
   - missing handling: excluded under prespecified inclusion rules for complete design-consistent cases.
   - centering: none (binary indicator retained in original coding).
@@ -93,11 +142,16 @@ Both components are included jointly in the primary model.
 - ICCS/CivED individual-level student data from IEA waves: 1999, 2009, 2016, 2022.
 - Contextual inequality data from SWIID (country-year Gini).
 - Harmonized analysis dataset from the project processing pipeline (pooled student-level file) linked to country-year Gini.
+- Project repository for analyses and processing pipeline: [nicolastobarj/gini-iccs](https://github.com/nicolastobarj/gini-iccs).
 
 ## Question 4. How will these data be obtained?
 
-- ICCS/CivED data are obtained from official IEA releases used in this project.
-- SWIID data are obtained from the SWIID release used in this project.
+- ICCS/CivED data are obtained from official IEA repository webpages:
+  - CivED 1999: https://www.iea.nl/data-tools/repository/cived-1999
+  - ICCS 2009: https://www.iea.nl/data-tools/repository/iccs-2009
+  - ICCS 2016: https://www.iea.nl/data-tools/repository/iccs-2016
+  - ICCS 2022: https://www.iea.nl/data-tools/repository/iccs-2022
+- SWIID data are obtained from the SWIID webpage: https://fsolt.org/swiid/
 - Data integration is reproducible through the project processing scripts and documented country-name harmonization rules.
 - Gini assignment follows a prespecified country-year matching rule; no retrospective matching based on substantive results is allowed.
 
@@ -189,6 +243,8 @@ All analyses will be implemented in R. Package selection will be finalized only 
 
 The project has prior data-processing and harmonization checks, including pooled-data construction and descriptive validation. These prior checks are acknowledged as preprocessing validation and not treated as confirmatory hypothesis tests.
 
+A previous presentation on  [INVALSI 2022](https://nicolastobarj.github.io/gini-iccs/INVALSI_2022/presentation/INVALSI_2022.html) was used as project background, prior analyses were conducted on pre-2022 IEA waves (1999, 2009, 2016), and a simpler modeling strategy was used for prediction of pacific actions. Those earlier analyses did not implement the current full preregistered specification and excluded 2022 data. 
+
 No additional model tuning based on outcome-specific confirmatory results will be performed prior to preregistered model execution.
 
 ## Question 9. What is already known about the data that could be relevant to the hypotheses?
@@ -200,13 +256,12 @@ No additional model tuning based on outcome-specific confirmatory results will b
 
 ## Question 10. Provide a brief timeline for the different stages of the preregistration.
 
-1. Finalize preregistration text and freeze variable definitions and matching rules.
-2. Complete wave-by-wave ICCS design audit (weights, strata, PSU, replication method).
-3. Lock primary estimator and design-based variance procedure in R.
-4. Build analysis-ready modeling dataset with Gini within-between terms.
-5. Run preregistered primary models for peaceful and trafic.
-6. Run preregistered robustness analyses.
-7. Compile and report results with explicit confirmatory versus robustness labeling.
+1. Complete wave-by-wave ICCS design audit (weights, strata, PSU, replication method).
+2. Lock primary estimator and design-based variance procedure in R.
+3. Build analysis-ready modeling dataset with Gini within-between terms.
+4. Run preregistered primary models for peaceful and trafic.
+5. Run preregistered robustness analyses.
+6. Compile and report results with explicit confirmatory versus robustness labeling.
 
 ## Prespecified Missing-Data Rules
 
@@ -214,7 +269,6 @@ No additional model tuning based on outcome-specific confirmatory results will b
 - Missing Gini or Gini components: excluded from primary model.
 - Missing individual covariates: handled by prespecified complete-case rule unless design-consistent imputation is preregistered before estimation.
 - Missing weights/design variables: observation excluded from design-based primary estimator.
-- Structural nonparticipation of country-wave cells: not treated as individual missingness.
 
 If multiple imputation is adopted, it will be prespecified before estimation with explicit handling of clustering and survey-design variables.
 
@@ -224,11 +278,7 @@ A. Restricted participation sample: countries observed in at least two waves.
 
 B. Country fixed-effects model with wave fixed effects to emphasize within-country inequality variation.
 
-C. Ordinal sensitivity model for 4-category outcomes.
-
-D. Alternative contextual specification using raw country-year Gini (sensitivity only).
-
-E. Alternative variance-estimation approach that appropriately accounts for clustered and complex survey design, where technically feasible.
+C. Categorical sensitivity model for binary outcomes.
 
 ## Country-Wave Gini Matching Protocol
 
@@ -238,7 +288,3 @@ E. Alternative variance-estimation approach that appropriately accounts for clus
 - Missing Gini handling: prespecified exclusion or justified temporal rule; no post hoc choice based on results.
 - Boundary/name differences: handled through documented mapping rules.
 - Any interpolation or nearest-year substitution must be explicitly justified and declared before model estimation.
-
-## Methodological Constraint Statement
-
-This preregistration does not permit simplifying the primary analysis to a convenience unweighted mixed model that ignores ICCS design-based variance requirements. If implementation constraints arise, the trade-off will be explicitly documented and complemented by a design-appropriate sensitivity framework.
