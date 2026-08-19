@@ -95,9 +95,7 @@ The analyses area will host visualizations, statistical analyses, and models. Th
 
 GitHub Pages URL pattern for this report:
 
-- `https://<your-user>.github.io/<your-repo>/analyses/items_descriptions.html`
-
-Replace `<your-user>` and `<your-repo>` with your repository values after enabling GitHub Pages.
+- `https://nicolastobarj.github.io/gini-iccs/analyses/items_descriptions.html`
 
 ## Raw Data Locations
 
