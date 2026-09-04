@@ -1,5 +1,5 @@
 ---
-title: "OSF Secondary Data Preregistration: Inequality and Youth Protest Disposition in ICCS"
+title: "OSF Secondary Data Preregistration: Inequality and Youth Protest Disposition around the globe"
 author: "Daniel Miranda & Nicolás Tobar"
 date: "2026-08-19"
 format:
@@ -15,16 +15,17 @@ execute:
 
 ## Study Scope
 
-This preregistration defines the confirmatory analysis plan for a secondary-data study using four repeated cross-sectional waves of ICCS (1999, 2009, 2016, 2022). The unit of observation is the individual student.
+This preregistration defines the confirmatory analysis plan for a secondary-data study using four repeated cross-sectional waves of ICCS/CivED (1999, 2009, 2016, 2022). The unit of observation is the individual student.
 
 The substantive goal is to test whether country-level economic inequality is associated with students' willingness to engage in protest behavior, with theory-informed controls at the individual level.
 
 ## Question 1. What is the hypothesis being tested?
 
-### Primary contextual hypotheses
+### Primary contextual hypothesis
 
-- H1a (between-country): Countries with higher average inequality across observed ICCS waves will show higher average student protest disposition compared with countries with lower average inequality.
-- H1b (within-country): Increases of inequality within the same country across waves will be associated with an uprising of student protest disposition, and vice-versa.
+- H1: Students in countries with higher inequality are expected to show higher protest disposition than students in countries with lower inequality, net of individual-level covariates and wave effects.
+
+This is the primary confirmatory contextual hypothesis. The design is not treated as a balanced longitudinal panel, and therefore the confirmatory analysis does not rely on a within-country inequality effect as the main inferential target.
 
 ### Individual-level hypotheses
 
@@ -74,17 +75,15 @@ The primary estimator treats these outcomes as continuous; categorical/ordinal t
 
 - gini: disposable-income Gini at country-year level.
 
-Primary analysis uses a within-between decomposition:
+The primary analysis uses a single country-year inequality measure, `gini_ct`, as the contextual predictor.
+
+The primary contextual effect is therefore represented as a single coefficient on the country-year Gini value:
 
 $$
-\text{Gini}_{between,c} = \overline{\text{Gini}_{ct}} \text{ across observed waves for country } c
+\text{Gini}_{ct}
 $$
 
-$$
-\text{Gini}_{within,ct} = \text{Gini}_{ct} - \text{Gini}_{between,c}
-$$
-
-Both components are included jointly in the primary model.
+where $c$ indexes countries and $t$ indexes country-wave observations.
 
 ### Individual covariates
 
@@ -162,7 +161,7 @@ Both components are included jointly in the primary model.
 Primary analysis includes all student observations with non-missing:
 
 - outcome (peaceful or trafic, depending on model);
-- Gini decomposition terms;
+- country-year Gini value;
 - prespecified individual covariates;
 - required design information (weights and any required variance-estimation fields).
 
@@ -184,32 +183,35 @@ Students are not followed longitudinally across waves. Country participation acr
 
 ### Primary specification
 
-For each outcome (peaceful and trafic), estimate a linear mixed-effects model with:
+For each outcome (peaceful and trafic), estimate a multilevel model with:
 
-- fixed effects: Gini_between, Gini_within, gender, civic_test, parents_hisced, and wave fixed effects;
-- random effects: country random intercept and country-wave random intercept/context term;
-- wave represented as categorical fixed effects for 1999, 2009, 2016, 2022.
-- conceptual random-effects syntax in R: (1 | country) + (1 | country:wave).
-- dataset-mapped syntax in this project: (1 | idcountry) + (1 | idcountry:study).
-- wave enters as a factor (reference level fixed a priori to 1999 unless design-audit constraints require a documented alternative).
+- fixed effects: country-year Gini, gender, civic_test, parents_hisced, and wave fixed effects;
+- random effect: country random intercept;
+- wave represented as categorical fixed effects for 1999, 2009, 2016, 2022;
+- country identification based on `idcountry` and wave based on `study`.
+
+The primary contextual predictor is the observed country-year Gini score, not a within-country decomposition. The main model therefore estimates a general inequality effect while accounting for the unbalanced cross-national structure.
 
 Conceptual model:
 
 $$
-Y_{ict} = \beta_0 + \beta_B \text{Gini}_{between,c} + \beta_W \text{Gini}_{within,ct} + X_{ict}\beta + \gamma_t + u_c + v_{ct} + \varepsilon_{ict}
+Y_{ict} = \beta_0 + \beta_1 \text{Gini}_{ct} + X_{ict}\beta + \gamma_t + u_c + \varepsilon_{ict}
 $$
 
-where $X_{ict}$ includes gender, civic_test, and parents_hisced.
+where $Y_{ict}$ is the protest disposition outcome for student $i$ in country $c$ and wave $t$, $\text{Gini}_{ct}$ is the country-year Gini value, $X_{ict}$ includes gender, civic_test, and parents_hisced, $\gamma_t$ is the wave fixed effect, and $u_c$ is the country-level random intercept.
+
+This specification is the confirmatory model. 
 
 ### Model constraints
 
+- Do not treat the within-country decomposition.
 - Do not replace wave fixed effects with a random year intercept.
 - Do not specify year as a level above country.
-- Do not use raw Gini as the only contextual term in the primary model.
+- Keep `gini` as the single primary contextual term in the main model.
 
 ### Centering and scaling
 
-- Gini uses explicit within-between decomposition.
+- The main contextual predictor is the observed country-year Gini value.
 - Individual covariates will be prespecified as coded in the harmonized file; any standardization decision will be fixed before estimation and applied consistently across outcomes.
 
 ### Complex survey design integration
@@ -233,8 +235,7 @@ All analyses will be implemented in R. Package selection will be finalized only 
 - Two-sided tests with alpha = 0.05.
 - 95% confidence intervals for all focal coefficients.
 - Primary evidence will be based on sign, magnitude, and uncertainty of:
-  - Gini_between coefficient;
-  - Gini_within coefficient;
+  - the country-year Gini coefficient;
   - prespecified individual-covariate coefficients.
 - Interpretation will not rely on p-values alone.
 - Effective contextual information is determined by country-wave variation, not by student count alone.
@@ -258,9 +259,9 @@ No additional model tuning based on outcome-specific confirmatory results will b
 
 1. Complete wave-by-wave ICCS design audit (weights, strata, PSU, replication method).
 2. Lock primary estimator and design-based variance procedure in R.
-3. Build analysis-ready modeling dataset with Gini within-between terms.
+3. Build analysis-ready modeling dataset with the single country-year Gini predictor and fixed wave effects.
 4. Run preregistered primary models for peaceful and trafic.
-5. Run preregistered robustness analyses.
+5. Run preregistered robustness analyses, including any exploratory within-between decomposition as a sensitivity check only.
 6. Compile and report results with explicit confirmatory versus robustness labeling.
 
 ## Prespecified Missing-Data Rules
@@ -276,9 +277,9 @@ If multiple imputation is adopted, it will be prespecified before estimation wit
 
 A. Restricted participation sample: countries observed in at least two waves.
 
-B. Country fixed-effects model with wave fixed effects to emphasize within-country inequality variation.
+B. Secondary model with a within-between decomposition of Gini as a sensitivity analysis, interpreted as exploratory unless the design structure supports it.
 
-C. Categorical sensitivity model for binary outcomes.
+C. Categorical sensitivity model for ordinal outcomes.
 
 ## Country-Wave Gini Matching Protocol
 

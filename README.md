@@ -217,3 +217,7 @@ Report packages:
 - Keep raw files unchanged in `raw_data/`.
 - Regenerate `documents/` and `report/` outputs after changes in processing scripts.
 
+## Pre-Registration
+
+The study was preregistered on OSF repository. User can visit the draft [here](`https://nicolastobarj.github.io/gini-iccs/report/preregistration.html`).
+
