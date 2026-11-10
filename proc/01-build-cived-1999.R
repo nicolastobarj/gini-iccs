@@ -88,6 +88,15 @@ build_cived_1999 <- function(
     father_h <- map_1999_hisced(father)
     parents_hisced <- pmax(mother_h, father_h, na.rm = TRUE)
     parents_hisced[is.infinite(parents_hisced)] <- NA_real_
+    # University: either parent completed a bachelor's degree (raw code 7); raw 1-6 = no.
+    mother_v <- ifelse(mother %in% 1:7, mother, NA_real_)
+    father_v <- ifelse(father %in% 1:7, father, NA_real_)
+    parents_max <- suppressWarnings(pmax(mother_v, father_v, na.rm = TRUE))
+    parents_max[is.infinite(parents_max)] <- NA_real_
+    parents_univ <- ifelse(is.na(parents_max), NA_real_, as.numeric(parents_max == 7))
+
+    civic_raw <- as.numeric(pick_var(df, c("KNOWLMLE", "KNOCG_ML"), required = FALSE))
+    civic_raw[civic_raw >= 998] <- NA_real_ # 998 = not administered
 
     gender_raw <- as.numeric(pick_var(df, c("BSGGEND", "ITSEX"), required = FALSE))
     gender <- case_when(
@@ -102,16 +111,19 @@ build_cived_1999 <- function(
       idschool = idschool,
       idcountry = as.numeric(idcountry_raw),
       label_country = label_country,
-      contact = as.numeric(pick_var(df, c("BS5M4"))),
+      contact = as.numeric(pick_var(df, c("BS5M4"))), # letters about social/political concerns (no contact-representative item in CivED)
       peaceful = as.numeric(pick_var(df, c("BS5M9"))),
       sign = as.numeric(pick_var(df, c("BS5M8"))),
       spray = as.numeric(pick_var(df, c("BS5M10"))),
       trafic = as.numeric(pick_var(df, c("BS5M11"))),
       occupy = as.numeric(pick_var(df, c("BS5M12"))),
       parents_hisced = parents_hisced,
+      parents_univ = parents_univ,
       gender = gender,
-      civic_test = as.numeric(pick_var(df, c("KNOWLMLE", "KNOCG_ML"), required = FALSE)),
+      civic_test = civic_raw,
       weights = as.numeric(pick_var(df, c("TOTWGT", "WGTFAC1"), required = FALSE)),
+      jkzone = as.numeric(pick_var(df, c("JKZONE", "JKZONES"), required = FALSE)),
+      jkrep = as.numeric(pick_var(df, c("JKREP", "JKREPS"), required = FALSE)),
       study = 1999
     )
   })

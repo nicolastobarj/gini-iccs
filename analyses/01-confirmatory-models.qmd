@@ -1,0 +1,302 @@
+---
+title: "Confirmatory Models: Inequality and Youth Protest Disposition"
+subtitle: "Preregistered primary specification (CivED 1999, ICCS 2009/2016/2022)"
+format:
+  html:
+    toc: true
+    number-sections: true
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(knitr)
+
+# render from analyses/ (quarto) or project root
+root <- if (file.exists("output/confirmatory_models.rds")) "." else "analyses"
+res <- readRDS(file.path(root, "output/confirmatory_models.rds"))
+fig_dir <- file.path(root, "figures")
+dir.create(fig_dir, showWarnings = FALSE)
+
+outcome_lab <- c(peaceful = "Peaceful march", trafic = "Block traffic")
+term_lab <- c(
+  gini = "Gini (1 point)",
+  female = "Female (ref. male)",
+  civic_z = "Civic knowledge (z)",
+  parents_univ = "University-educated parent",
+  wave2009 = "Wave 2009 (ref. 1999)",
+  wave2016 = "Wave 2016",
+  wave2022 = "Wave 2022",
+  `(Intercept)` = "Intercept"
+)
+term_order <- names(term_lab)
+
+coef_tab <- bind_rows(lapply(names(res), function(y) {
+  bind_rows(
+    res[[y]]$wemix |> mutate(model = "WeMix (weighted, primary)"),
+    res[[y]]$lmer |> mutate(model = "lmer (unweighted)")
+  ) |> mutate(outcome = y)
+})) |>
+  mutate(
+    lo = estimate - 1.96 * se,
+    hi = estimate + 1.96 * se,
+    p = 2 * pnorm(-abs(estimate / se)),
+    term_label = factor(term_lab[term], levels = term_lab[term_order]),
+    outcome_label = outcome_lab[outcome]
+  )
+
+fmt_p <- function(p) ifelse(p < .001, "<.001", sprintf("%.3f", p))
+stars <- function(p) case_when(p < .001 ~ "***", p < .01 ~ "**", p < .05 ~ "*", TRUE ~ "")
+theme_set(theme_minimal(base_size = 13) +
+  theme(panel.grid.minor = element_blank(), legend.position = "bottom",
+        strip.text = element_text(face = "bold"), axis.title = element_text(face = "bold")))
+pal <- c("Peaceful march" = "#2C7FB8", "Block traffic" = "#C73E1D")
+```
+
+## Design summary
+
+- **Outcomes** (1 = certainly not … 4 = certainly would do; ICCS items reversed to match CivED): *peaceful march* and *block traffic*.
+- **Model** (preregistered): $Y_{ict} = \beta_0 + \beta_1 \text{Gini}_{ct} + \beta_2\text{female} + \beta_3\text{civic\_z} + \beta_4\text{parents\_univ} + \gamma_t + u_c + \varepsilon_{ict}$, with a country random intercept and wave fixed effects.
+- **Primary estimator**: weighted two-level model (`WeMix`), student total weights rescaled within country-wave, cluster-robust SEs. **Comparison**: unweighted `lme4::lmer`.
+- Gini: SWIID v9.92 disposable-income Gini (0–100) for the survey year. Civic knowledge standardized within wave.
+
+```{r sample}
+smp <- bind_rows(lapply(res, `[[`, "sample")) |>
+  mutate(outcome = outcome_lab[outcome])
+kable(smp, col.names = c("Outcome", "Students", "Countries", "Country-waves"),
+      format.args = list(big.mark = ","), caption = "Analytic samples (complete cases)")
+```
+
+## Main results
+
+```{r main-table}
+wide <- coef_tab |>
+  filter(term != "(Intercept)") |>
+  mutate(cell = sprintf("%.3f%s<br><small>[%.3f, %.3f]</small>", estimate, stars(p), lo, hi)) |>
+  select(term_label, outcome_label, model, cell) |>
+  mutate(col = paste(outcome_label, model, sep = " — ")) |>
+  select(-outcome_label, -model) |>
+  pivot_wider(names_from = col, values_from = cell) |>
+  arrange(term_label)
+
+# variance components / ICC
+icc_rows <- bind_rows(lapply(names(res), function(y) {
+  r <- res[[y]]
+  tau_null <- r$null_varcorr$vcov[r$null_varcorr$grp == "country"]
+  sig_null <- r$null_varcorr$vcov[r$null_varcorr$grp == "Residual"]
+  tau <- r$lmer_varcorr$vcov[r$lmer_varcorr$grp == "country"]
+  tibble(outcome = y, icc_null = tau_null / (tau_null + sig_null), tau_cond = tau)
+}))
+
+kable(wide, escape = FALSE, col.names = c("", names(wide)[-1]),
+      caption = "Fixed effects, 95% CI in brackets. * p<.05, ** p<.01, *** p<.001 (two-sided).")
+```
+
+```{r icc}
+kable(icc_rows |> mutate(outcome = outcome_lab[outcome]), digits = 3,
+      col.names = c("Outcome", "ICC (country, null model)", "Country variance (conditional model)"),
+      caption = "Country-level variance (lmer)")
+```
+
+## Hypothesis evaluation (preregistered criteria)
+
+Decision rule (Q7): supported if the coefficient has the expected sign and its 95% CI excludes zero; contradicted if opposite sign with CI excluding zero; otherwise inconclusive. H2 is non-directional. Evaluated on the primary (WeMix) estimates.
+
+```{r hyp}
+hyp <- tibble(
+  H = c("H1", "H2", "H3", "H4"),
+  term = c("gini", "female", "civic_z", "parents_univ"),
+  expected = c("+", "≠ 0", "−", "+"),
+  label = c("Higher inequality → more protest disposition",
+            "Gender is associated with protest disposition",
+            "Civic knowledge → less protest disposition",
+            "University-educated parent → more protest disposition")
+)
+verdict <- function(est, lo, hi, expected) {
+  sig <- lo > 0 | hi < 0
+  case_when(
+    !sig ~ "Inconclusive",
+    expected == "≠ 0" ~ "Supported",
+    expected == "+" & est > 0 ~ "Supported",
+    expected == "−" & est < 0 ~ "Supported",
+    TRUE ~ "Contradicted"
+  )
+}
+hv <- coef_tab |>
+  filter(model == "WeMix (weighted, primary)") |>
+  inner_join(hyp, by = "term") |>
+  mutate(
+    result = verdict(estimate, lo, hi, expected),
+    est = sprintf("%.3f [%.3f, %.3f]", estimate, lo, hi)
+  ) |>
+  select(H, label, expected, outcome_label, est, p, result) |>
+  mutate(p = fmt_p(p)) |>
+  arrange(H, outcome_label)
+kable(hv, col.names = c("", "Hypothesis", "Expected", "Outcome", "b [95% CI]", "p", "Result"))
+```
+
+## Figures
+
+### Coefficient plot
+
+```{r coefplot, fig.width=10, fig.height=5.5}
+cp <- coef_tab |>
+  filter(term %in% c("gini", "female", "civic_z", "parents_univ")) |>
+  ggplot(aes(x = estimate, y = forcats::fct_rev(term_label), color = outcome_label,
+             shape = model)) +
+  geom_vline(xintercept = 0, linetype = 2, color = "grey50") +
+  geom_pointrange(aes(xmin = lo, xmax = hi),
+                  position = position_dodge(width = 0.6), size = 0.5) +
+  scale_color_manual(values = pal) +
+  labs(x = "Coefficient (scale points, 1–4) with 95% CI", y = NULL, color = NULL, shape = NULL) +
+  guides(color = guide_legend(nrow = 1), shape = guide_legend(nrow = 1)) +
+  theme(legend.box = "vertical")
+cp
+ggsave(file.path(fig_dir, "coefplot_confirmatory.png"), cp, width = 10, height = 5.5, dpi = 300, bg = "white")
+```
+
+## Prespecified robustness F: country-wave random intercept
+
+Gini varies at the **country-wave** level. The primary model has only a country random intercept, and each country contributes thousands of students. In that setup the Gini slope is identified almost entirely by *within-country change over time*. Across country-waves, Gini has a between-country SD of about 7 points but a within-country SD of only about 1.3 points. The primary coefficient therefore does not estimate the between-country contrast stated in H1. Adding the country-wave random intercept (prespecified robustness analysis F) models the level where Gini varies. It also matches the specification of the earlier INVALSI 2022 analyses (see the reconciliation section below).
+
+```{r cw-models}
+get_tab <- function(y, nm, label) {
+  t <- res[[y]][[nm]]
+  if (is.null(t)) return(NULL)
+  t |> mutate(outcome = y, model = label)
+}
+cw_tab <- bind_rows(lapply(names(res), function(y) bind_rows(
+  get_tab(y, "wemix", "Primary: country RE (WeMix)"),
+  get_tab(y, "lmer_cw", "Country + country-wave RE (lmer)"),
+  get_tab(y, "wemix_cw", "Country + country-wave RE (WeMix)")
+))) |>
+  mutate(lo = estimate - 1.96 * se, hi = estimate + 1.96 * se,
+         p = 2 * pnorm(-abs(estimate / se)),
+         term_label = factor(term_lab[term], levels = term_lab[term_order]),
+         outcome_label = outcome_lab[outcome])
+
+cw_wide <- cw_tab |>
+  filter(term %in% c("gini", "female", "civic_z", "parents_univ")) |>
+  mutate(cell = sprintf("%.3f%s<br><small>[%.3f, %.3f]</small>", estimate, stars(p), lo, hi),
+         col = paste(outcome_label, model, sep = " — ")) |>
+  select(term_label, col, cell) |>
+  pivot_wider(names_from = col, values_from = cell) |>
+  arrange(term_label)
+kable(cw_wide, escape = FALSE, col.names = c("", names(cw_wide)[-1]),
+      caption = "Focal coefficients by random-effects structure (95% CI)")
+```
+
+```{r cw-hyp}
+cw_hv <- cw_tab |>
+  filter(model != "Primary: country RE (WeMix)") |>
+  inner_join(hyp, by = "term") |>
+  mutate(result = verdict(estimate, lo, hi, expected),
+         est = sprintf("%.3f [%.3f, %.3f]", estimate, lo, hi), p = fmt_p(p)) |>
+  select(H, outcome_label, model, est, p, result) |>
+  arrange(H, outcome_label, model)
+kable(cw_hv, col.names = c("", "Outcome", "Model", "b [95% CI]", "p", "Result"),
+      caption = "Hypothesis evaluation under robustness F")
+```
+
+## Wave-by-wave models
+
+These are separate models per wave (country random intercept, same covariates, unweighted), comparable to the wave-specific INVALSI 2022 tables.
+
+```{r by-wave, fig.width=10, fig.height=4.5}
+bw <- bind_rows(lapply(names(res), function(y) res[[y]]$by_wave |> mutate(outcome = y))) |>
+  filter(term == "gini") |>
+  mutate(lo = estimate - 1.96 * se, hi = estimate + 1.96 * se,
+         outcome_label = outcome_lab[outcome])
+kable(bw |> transmute(Outcome = outcome_label, Wave = study, Countries = n_countries,
+                      `b Gini` = estimate, `95% CI` = sprintf("[%.3f, %.3f]", lo, hi)),
+      digits = 3, caption = "Gini coefficient by wave")
+bwp <- ggplot(bw, aes(factor(study), estimate, color = outcome_label)) +
+  geom_hline(yintercept = 0, linetype = 2, color = "grey50") +
+  geom_pointrange(aes(ymin = lo, ymax = hi), position = position_dodge(width = 0.4)) +
+  scale_color_manual(values = pal) +
+  labs(x = "Wave", y = "Gini coefficient (95% CI)", color = NULL)
+bwp
+ggsave(file.path(fig_dir, "gini_by_wave.png"), bwp, width = 10, height = 4.5, dpi = 300, bg = "white")
+```
+
+### Country-wave means and the Gini effect
+
+Points are weighted country-wave means. The lines are model-implied Gini slopes anchored at the overall mean: solid for country + country-wave RE, dashed for the primary country-RE model.
+
+```{r scatter, fig.width=11, fig.height=6}
+cw <- bind_rows(lapply(names(res), function(y) res[[y]]$cw_means |> mutate(outcome = y))) |>
+  mutate(outcome_label = outcome_lab[outcome], wave = factor(study))
+slopes <- cw_tab |> filter(term == "gini", model != "Country + country-wave RE (WeMix)") |>
+  mutate(model = ifelse(grepl("Primary", model), "Country RE (primary)", "Country + country-wave RE"))
+lines <- cw |>
+  group_by(outcome) |>
+  summarise(gmin = min(gini), gmax = max(gini), gbar = mean(gini), ybar = mean(y_mean), .groups = "drop") |>
+  inner_join(slopes |> select(outcome, outcome_label, model, estimate), by = "outcome") |>
+  rowwise() |>
+  reframe(outcome_label, model, gini = seq(gmin, gmax, length.out = 50),
+          fit = ybar + estimate * (gini - gbar))
+
+sp <- ggplot(cw, aes(gini, y_mean)) +
+  geom_point(aes(color = wave), size = 2.2, alpha = 0.85) +
+  geom_line(data = lines, aes(gini, fit, linetype = model), linewidth = 1) +
+  facet_wrap(~outcome_label, scales = "free_y") +
+  scale_color_viridis_d(end = 0.9) +
+  scale_linetype_manual(values = c("Country + country-wave RE" = "solid", "Country RE (primary)" = "dashed")) +
+  labs(x = "Gini (SWIID, disposable income)", y = "Mean disposition (1–4)", color = "Wave", linetype = NULL) +
+  theme(legend.box = "vertical")
+sp
+ggsave(file.path(fig_dir, "gini_countrywave_scatter.png"), sp, width = 11, height = 6, dpi = 300, bg = "white")
+```
+
+### Substantive size of the Gini effect
+
+```{r size}
+gsd <- bind_rows(lapply(names(res), function(y) res[[y]]$gini_cw |> mutate(outcome = y))) |>
+  group_by(outcome) |>
+  summarise(sd_gini = sd(gini), p10 = quantile(gini, .1), p90 = quantile(gini, .9), .groups = "drop")
+sz <- cw_tab |> filter(term == "gini") |>
+  left_join(gsd, by = "outcome") |>
+  transmute(
+    Outcome = outcome_label, Model = model,
+    `Effect of +1 SD Gini` = estimate * sd_gini,
+    `P10→P90 Gini` = sprintf("%.1f → %.1f", p10, p90),
+    `Effect P10→P90` = estimate * (p90 - p10)
+  )
+kable(sz, digits = 3, caption = "Implied differences in disposition (1–4 scale)")
+```
+
+## Reconciliation with the INVALSI 2022 analyses
+
+The INVALSI 2022 Stata models (pooled 1999–2016, radical index) reported a positive Gini effect (b ≈ 0.01, t ≈ 4.7). The table below moves step by step from that specification to the preregistered one, using the corrected pooled data (unweighted lmer, ML).
+
+```{r reconcile}
+rec_path <- file.path(root, "output/reconciliation.rds")
+if (file.exists(rec_path)) {
+  rec <- readRDS(rec_path)
+  rec_tab <- rec$coefs |>
+    filter(term == "gini") |>
+    mutate(cell = sprintf("%.4f (%.4f)%s", estimate, se, stars(2 * pnorm(-abs(estimate / se))))) |>
+    select(model, outcome, cell) |>
+    pivot_wider(names_from = outcome, values_from = cell)
+  kable(rec_tab, col.names = c("Specification", "Radical index", "Block traffic", "Peaceful march", "Pacific index"),
+        caption = "Gini coefficient (SE) across specifications")
+}
+```
+
+- **Specification A reproduces the INVALSI result** with the corrected data (b ≈ 0.013 for the radical index).
+- Adding 2022 or dropping the school level (B, C) does not change it.
+- Using within-wave instead of within-country civic knowledge (D) roughly halves the effect for radical actions. Within-wave scores carry between-country knowledge differences, which correlate with Gini.
+- The **sign changes only when the country-wave level is removed** (F, G). That is the random-effects structure of the preregistered primary model, and it identifies Gini from within-country change.
+- Item note: the INVALSI 2016 indices used IS3G31B (*vote in national elections*) in the pacific index and IS3G31I (*volunteer time to help people*) in the radical index. The equivalent protest items are IS3G30B (*contact representative*) and IS3G30I (*spray slogans*). The indices above use the correct protest items in every wave and still reproduce the INVALSI Gini result.
+- The two Gini sources are nearly identical: the INVALSI hand-coded values and SWIID v9.92 agree closely for 1999–2016.
+
+## Notes
+
+- Sections 2–3 report the **preregistered primary** model. The country-wave model is **prespecified robustness analysis F**. The reconciliation section is exploratory. Other robustness analyses (A–E) are pending.
+- Data processing corrections made before estimation (all verified against IEA value labels): ICCS 2009/2016/2022 participation items reversed to the CivED direction; gender coding corrected for ICCS 2016 and 2022 (raw 1 = girl); valid parental-education code 0 retained; binary university indicator built per wave.

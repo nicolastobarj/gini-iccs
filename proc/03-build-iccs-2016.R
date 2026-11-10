@@ -63,38 +63,38 @@ build_iccs_2016 <- function(
     label_country <- dplyr::coalesce(label_country, map_iccs2016_country_code(file_code))
 
     gender_raw <- as.numeric(pick_var(df, c("S_GENDER", "s_gender"), required = FALSE))
-    has_zero_code <- any(gender_raw == 0, na.rm = TRUE)
     gender <- case_when(
-      has_zero_code & gender_raw == 0 ~ 1, # female (0/1 coding)
-      has_zero_code & gender_raw == 1 ~ 0, # male (0/1 coding)
-      !has_zero_code & gender_raw == 2 ~ 1, # female (1/2 coding fallback)
-      !has_zero_code & gender_raw == 1 ~ 0, # male (1/2 coding fallback)
-      gender_raw %in% c(8, 9, 98, 99) ~ NA_real_,
+      # S_GENDER value labels (verified in all 2016 country files): 1 = Girl, 0 = Boy
+      gender_raw == 1 ~ 1, # female
+      gender_raw == 0 ~ 0, # male
       TRUE ~ NA_real_
     )
 
     hisced_raw <- as.numeric(pick_var(df, c("S_HISCED", "s_hisced"), required = FALSE))
     parents_hisced <- case_when(
-      hisced_raw %in% c(0, 8, 9, 98, 99) ~ NA_real_,
-      hisced_raw %in% 1:5 ~ hisced_raw,
-      TRUE ~ NA_real_
+      hisced_raw %in% 0:4 ~ hisced_raw, # 0 = did not complete ISCED 2 (valid)
+      TRUE ~ NA_real_ # 7 invalid, 8 not administered, 9 omitted
     )
+    parents_univ <- ifelse(is.na(parents_hisced), NA_real_, as.numeric(parents_hisced == 4)) # ISCED 6-8
 
     tibble(
       idstudent = as.numeric(pick_var(df, c("IDSTUD", "idstud"), required = FALSE)),
       idschool = as.numeric(pick_var(df, c("IDSCHOOL", "idschool"))),
       idcountry = as.numeric(idcountry_raw),
       label_country = label_country,
-      contact = as.numeric(pick_var(df, c("IS3G31B", "is3g31b"))),
+      contact = as.numeric(pick_var(df, c("IS3G30B", "is3g30b"))), # Contact an <elected representative>
       peaceful = as.numeric(pick_var(df, c("IS3G30C", "is3g30c"))),
       sign = as.numeric(pick_var(df, c("IS3G30D", "is3g30d"))),
       spray = as.numeric(pick_var(df, c("IS3G30I", "is3g30i"))),
       trafic = as.numeric(pick_var(df, c("IS3G30J", "is3g30j"))),
       occupy = as.numeric(pick_var(df, c("IS3G30K", "is3g30k"))),
       parents_hisced = parents_hisced,
+      parents_univ = parents_univ,
       gender = gender,
       civic_test = as.numeric(pick_var(df, c("PV1CIV", "pv1civ"), required = FALSE)),
       weights = as.numeric(pick_var(df, c("TOTWGTS", "totwgts", "TOTWGT", "totwgt"), required = FALSE)),
+      jkzone = as.numeric(pick_var(df, c("JKZONES", "jkzones"), required = FALSE)),
+      jkrep = as.numeric(pick_var(df, c("JKREPS", "jkreps"), required = FALSE)),
       study = 2016
     )
   })

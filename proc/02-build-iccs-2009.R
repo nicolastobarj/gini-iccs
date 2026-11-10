@@ -80,33 +80,34 @@ build_iccs_2009 <- function(
     gender <- case_when(
       gender_raw == 1 ~ 1,
       gender_raw == 0 ~ 0,
-      gender_raw %in% c(8, 9, 98, 99) ~ NA_real_,
-      TRUE ~ gender_raw
+      TRUE ~ NA_real_ # 7 invalid, 8 not administered, 9 omitted
     )
 
     hisced_raw <- as.numeric(pick_var(df, c("HISCED", "hisced"), required = FALSE))
     parents_hisced <- case_when(
-      hisced_raw %in% c(0, 8, 9, 98, 99) ~ NA_real_,
-      hisced_raw == 1 ~ 1,
-      hisced_raw %in% 2:5 ~ hisced_raw,
-      TRUE ~ NA_real_
+      hisced_raw %in% 0:5 ~ hisced_raw, # 0 = did not complete ISCED 1 (valid)
+      TRUE ~ NA_real_ # 7 invalid, 8 not administered, 9 omitted
     )
+    parents_univ <- ifelse(is.na(parents_hisced), NA_real_, as.numeric(parents_hisced == 5)) # ISCED 5A/6
 
     tibble(
       idstudent = as.numeric(pick_var(df, c("IDSTUD", "idstud"), required = FALSE)),
       idschool = as.numeric(pick_var(df, c("IDSCHOOL", "idschool"))),
       idcountry = as.numeric(idcountry_raw),
       label_country = label_country,
-      contact = as.numeric(pick_var(df, c("IS2P31E", "is2p31e"))),
+      contact = as.numeric(pick_var(df, c("IS2P31C", "is2p31c"))), # PROTEST-CONTACT <ELECTED REPRESENTATIVE>
       peaceful = as.numeric(pick_var(df, c("IS2P31D", "is2p31d"))),
-      sign = as.numeric(pick_var(df, c("IS2P31C", "is2p31c"))),
+      sign = as.numeric(pick_var(df, c("IS2P31E", "is2p31e"))), # PROTEST-COLLECT SIGNATURES
       spray = as.numeric(pick_var(df, c("IS2P31G", "is2p31g"))),
       trafic = as.numeric(pick_var(df, c("IS2P31H", "is2p31h"))),
       occupy = as.numeric(pick_var(df, c("IS2P31I", "is2p31i"))),
       parents_hisced = parents_hisced,
+      parents_univ = parents_univ,
       gender = gender,
       civic_test = as.numeric(pick_var(df, c("PV1CIV", "pv1civ"), required = FALSE)),
       weights = as.numeric(pick_var(df, c("TOTWGTS", "totwgts", "TOTWGT", "totwgt"), required = FALSE)),
+      jkzone = as.numeric(pick_var(df, c("JKZONES", "jkzones"), required = FALSE)),
+      jkrep = as.numeric(pick_var(df, c("JKREPS", "jkreps"), required = FALSE)),
       study = 2009
     )
   })

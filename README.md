@@ -9,6 +9,17 @@ The project is organized so new users can:
 3. Inspect a transparent variable mapping/codebook.
 4. Validate final data quality with a Quarto report.
 
+## Results Pages (GitHub Pages)
+
+| Report | Link |
+|---|---|
+| Confirmatory models (preregistered primary model, robustness F with country-wave random intercept, wave-by-wave models) | [01-confirmatory-models.html](https://nicolastobarj.github.io/gini-iccs/analyses/01-confirmatory-models.html) |
+| Reconciliation with the INVALSI 2022 analyses | [01-confirmatory-models.html#reconciliation-with-the-invalsi-2022-analyses](https://nicolastobarj.github.io/gini-iccs/analyses/01-confirmatory-models.html#reconciliation-with-the-invalsi-2022-analyses) |
+| Country-wave random intercept model (robustness F) | [01-confirmatory-models.html#prespecified-robustness-f-country-wave-random-intercept](https://nicolastobarj.github.io/gini-iccs/analyses/01-confirmatory-models.html#prespecified-robustness-f-country-wave-random-intercept) |
+| Item descriptions | [items_descriptions.html](https://nicolastobarj.github.io/gini-iccs/analyses/items_descriptions.html) |
+| Processing validation | [01-processing-validation.html](https://nicolastobarj.github.io/gini-iccs/report/01-processing-validation.html) |
+| Preregistration | [OSF view-only link](https://osf.io/xc6j8/overview?view_only=1050a117024e47fab9c2348cc60bc741) · [HTML](https://nicolastobarj.github.io/gini-iccs/report/preregistration.html) |
+
 ## What This Project Produces
 
 Main final output:
@@ -50,6 +61,10 @@ This file contains pooled student-level data across study waves and includes `st
   - Generates documentation files in `documents/`.
   - Exports final schema and mapping table.
 
+- `proc/07-validate-items-against-raw.R`
+  - Independent check of every participation item (wave × country file) against the raw IEA value-label text.
+  - Writes `documents/item_validation.csv`; all checks must report 0 mismatches.
+
 ### Documentation and Validation
 
 - `documents/codebook_final_schema.csv`
@@ -88,14 +103,16 @@ This file contains pooled student-level data across study waves and includes `st
 
 ## Analyses Reports
 
-The analyses area will host visualizations, statistical analyses, and models. The first published report is:
+The analyses area hosts visualizations, statistical analyses, and models:
 
-- `analyses/items_descriptions.qmd` (source)
-- `analyses/items_descriptions.html` (rendered report)
+- `analyses/items_descriptions.qmd` / `.html`: descriptive analysis of dichotomized participation items.
+  - `https://nicolastobarj.github.io/gini-iccs/analyses/items_descriptions.html`
+- `analyses/01-confirmatory-models.R`: estimates the preregistered models (WeMix weighted + lmer), the prespecified country-wave robustness model and wave-by-wave models. Writes `analyses/output/confirmatory_models.rds`.
+- `analyses/02-reconciliation-invalsi.R`: step-by-step comparison with the INVALSI 2022 Stata specification. Writes `analyses/output/reconciliation.rds`.
+- `analyses/01-confirmatory-models.qmd` / `.html`: results report (tables + figures; PNGs in `analyses/figures/`).
+  - `https://nicolastobarj.github.io/gini-iccs/analyses/01-confirmatory-models.html`
 
-GitHub Pages URL pattern for this report:
-
-- `https://nicolastobarj.github.io/gini-iccs/analyses/items_descriptions.html`
+Run order (from project root): `Rscript analyses/01-confirmatory-models.R`, `Rscript analyses/02-reconciliation-invalsi.R`, then `quarto render analyses/01-confirmatory-models.qmd`.
 
 ## Raw Data Locations
 
@@ -128,9 +145,11 @@ The pooled data are harmonized to this core structure:
 - `occupy`
 - `gini`
 - `parents_hisced`
+- `parents_univ` (1 = at least one university-educated parent)
 - `gender`
 - `civic_test`
 - `weights`
+- `jkzone`, `jkrep` (jackknife design variables)
 - `study`
 
 See `documents/codebook_final_schema.csv` and `documents/codebook_mapping_table.csv` for exact source mappings.
@@ -195,7 +214,10 @@ Report packages:
 - The processing is raw-first: scripts read original files from `raw_data/`.
 - Country labels can be recovered from file code fallbacks where SPSS/R labels are absent.
 - SWIID gini is matched by normalized country label and study year.
-- Missing codes in survey items (for example `0`, `8`, `9`, `98`, `99`) are harmonized to `NA` where appropriate.
+- Participation items are harmonized to 1 = certainly not ... 4 = certainly would do in all waves (ICCS 2009/2016/2022 raw items are reversed, 5 - x).
+- Non-substantive codes (CivED 0/8; ICCS 7/8/9) are harmonized to `NA`.
+- Gender is 1 = female, 0 = male in all waves (raw ICCS codes: 1 = girl, 0 = boy).
+- `parents_univ` uses a wave-specific ISCED rule (see `documents/codebook.md`).
 - CivED 1999 currently uses Grade 8 for comparability decisions.
 
 ## Who Should Read What First
@@ -219,5 +241,8 @@ Report packages:
 
 ## Pre-Registration
 
-The study was preregistered on OSF repository. User can visit the draft [here](https://nicolastobarj.github.io/gini-iccs/report/preregistration.html).
+The study is preregistered on OSF ([view-only link](https://osf.io/xc6j8/overview?view_only=1050a117024e47fab9c2348cc60bc741)).
+
+- `report/preregistration.qmd` / `.html`: registered text with authors ([online](https://nicolastobarj.github.io/gini-iccs/report/preregistration.html)).
+- `report/preregistration_anonymized.qmd` / `.html` / `.pdf`: anonymized version submitted for peer review.
 

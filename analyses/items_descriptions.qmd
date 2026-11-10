@@ -29,8 +29,11 @@ When GitHub Pages is enabled for the repository, replace `<your-user>` and `<you
 
 Coding used in this report:
 
-- 1999: values 1 and 2 are recoded to 0, values 3 and 4 are recoded to 1.
-- 2009, 2016, 2022: values 1 and 2 are recoded to 1, values 3 and 4 are recoded to 0.
+- Items in the pooled data are harmonized in all waves to 1 = certainly not, 2 = probably not, 3 = probably, 4 = certainly would do (ICCS 2009/2016/2022 raw items are reversed in `proc/05-build-pooled-data.R`).
+- Dichotomization (all waves): 3 and 4 = 1 (would probably/certainly do), 1 and 2 = 0.
+- Source items: contact = BS5M4 (1999, *write letters about social/political concerns*, closest proxy since CivED has no contact-representative item), IS2P31C (2009), IS3G30B (2016), IS4G31B (2022); sign = BS5M8, IS2P31E, IS3G30D, IS4G31D. Every item was validated against the raw IEA value labels for every country file (`proc/07-validate-items-against-raw.R`, results in `documents/item_validation.csv`).
+- Latin American countries show higher expected participation on all items, both conventional and radical. This is consistent with the IEA international reports and is not a coding artefact.
+- Parental education groups use `parents_univ` (at least one university-educated parent; wave-specific ISCED rule, see `documents/codebook.md`).
 - Missing values are never displayed in plots.
 
 ```{r}
@@ -63,7 +66,7 @@ resolve_pooled_path <- function() {
 
 required_cols <- c(
   "study", "label_country", "contact", "peaceful", "sign", "spray", "trafic", "occupy",
-  "gender", "parents_hisced", "civic_test", "gini"
+  "gender", "parents_univ", "civic_test", "gini"
 )
 
 db <- readRDS(resolve_pooled_path())
@@ -156,11 +159,10 @@ theme_conference <- function() {
 }
 
 dichotomize_item <- function(x, study) {
+  # pooled items are already harmonized (4 = certainly would do) in all waves
   case_when(
-    study == 1999 & x %in% c(3, 4) ~ 1,
-    study == 1999 & x %in% c(1, 2) ~ 0,
-    study %in% c(2009, 2016, 2022) & x %in% c(1, 2) ~ 1,
-    study %in% c(2009, 2016, 2022) & x %in% c(3, 4) ~ 0,
+    x %in% c(3, 4) ~ 1,
+    x %in% c(1, 2) ~ 0,
     TRUE ~ NA_real_
   )
 }
@@ -234,13 +236,11 @@ db_clean <- db |>
     gender = case_when(
       gender == 0 ~ "Men",
       gender == 1 ~ "Women",
-      gender == 2 ~ "Women",
       TRUE ~ NA_character_
     ),
     hisced_group = case_when(
-      is.na(parents_hisced) ~ NA_character_,
-      parents_hisced >= 4 ~ "University",
-      parents_hisced < 4 ~ "Non-university",
+      parents_univ == 1 ~ "University",
+      parents_univ == 0 ~ "Non-university",
       TRUE ~ NA_character_
     )
   ) |>

@@ -1,0 +1,227 @@
+---
+title: "Secondary Data Preregistration: Inequality and Youth Protest Disposition around the Globe"
+subtitle: "Anonymized version for peer review"
+format:
+  html:
+    toc: true
+    number-sections: true
+    embed-resources: true
+  pdf:
+    toc: true
+    number-sections: true
+    geometry: margin=2.5cm
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Study Scope
+
+This preregistration defines the confirmatory analysis plan for a secondary-data study using four repeated cross-sectional waves of the IEA Civic Education Study (CivED 1999) and the International Civic and Citizenship Education Study (ICCS 2009, 2016, 2022). The unit of observation is the individual Grade 8 student (approximately 14 years old).
+
+The substantive goal is to test whether country-level economic inequality is associated with students' willingness to engage in protest behavior, net of theory-informed individual-level controls.
+
+## Question 1. What is the hypothesis being tested?
+
+### Primary contextual hypothesis
+
+- H1: Students in countries with higher income inequality show higher protest disposition than students in countries with lower inequality, net of individual-level covariates and wave effects.
+
+This is the primary confirmatory contextual hypothesis. The design is not treated as a balanced longitudinal panel, and the confirmatory analysis does not rely on a within-country inequality effect as the main inferential target.
+
+### Individual-level hypotheses
+
+- H2: Gender is associated with protest disposition (non-directional).
+- H3: Higher civic knowledge is negatively associated with protest disposition.
+- H4: Having at least one university-educated parent is positively associated with protest disposition.
+
+H1, H3 and H4 are directional; H2 is non-directional. All tests are two-sided (see Question 7).
+
+## Question 2. How will the key variables be operationalized?
+
+### Outcomes
+
+The two dependent variables are 4-category student items, treated as approximately continuous in the primary model:
+
+- `peaceful`: willingness to take part in a peaceful protest march.
+- `trafic`: willingness to block traffic as a form of protest.
+
+Common question stem across waves: *"There are many different ways how citizens may express their opinions about important issues in society. Would you take part in any of the following activities to express your opinion in the future?"*
+
+Wave-specific source variables:
+
+| Outcome | 1999 (CivED) | 2009 (ICCS) | 2016 (ICCS) | 2022 (ICCS) |
+|---|---|---|---|---|
+| peaceful | BS5M9 "Particip. in a non-violent protest march" | IS2P31D "Peaceful march" | IS3G30C "Peaceful march" | IS4G31C "Take part in a peaceful march or rally" |
+| trafic | BS5M11 "Block traffic as a form of protest" | IS2P31H "Block traffic" | IS3G30J "Block traffic" | IS4G31L "Block traffic" |
+
+Response coding in the source files differs by wave:
+
+- CivED 1999: 1 = certainly not do this, 2 = probably not, 3 = probably do, 4 = certainly do this.
+- ICCS 2009, 2016, 2022: 1 = I would certainly do this, 2 = probably do, 3 = probably not, 4 = I would certainly not do this.
+
+Harmonization rule: ICCS 2009, 2016 and 2022 items are reversed (`5 - x`) so that in all waves **1 = certainly not, 2 = probably not, 3 = probably, 4 = certainly** (higher values = higher protest disposition). Non-substantive codes (CivED: 0 = don't know, 8 = not administered; ICCS: 7 = invalid, 8 = not administered, 9 = omitted) are set to missing.
+
+The primary estimator treats these outcomes as continuous; an ordinal treatment is prespecified as a robustness analysis.
+
+### Contextual predictor (country-year)
+
+- `gini`: Gini index of disposable (post-tax, post-transfer) household income from the Standardized World Income Inequality Database (SWIID, version 9.92, variable `gini_disp`), on its original 0–100 scale. The coefficient is interpreted per one Gini point.
+
+The primary contextual effect is a single coefficient on the country-year value $\text{Gini}_{ct}$, where $c$ indexes countries and $t$ indexes waves.
+
+### Individual covariates
+
+**Gender (`female`)**
+
+- Source variables: 1999 BSGGEND (1 = girl, 2 = boy); 2009 SGENDER (1 = girl, 0 = boy); 2016 S_GENDER (1 = girl, 0 = boy); 2022 SD_GENDER (1 = girl, 0 = boy).
+- Coding: 1 = female, 0 = male (reference). No centering.
+
+**Civic knowledge (`civic_z`)**
+
+- Source variables: 1999 KNOWLMLE (civic knowledge scale score, international mean 100, SD 20); 2009, 2016, 2022 PV1CIV (first plausible value of civic knowledge, ICCS metric with mean 500, SD 100 in 2009).
+- Because the 1999 and ICCS metrics differ, the score is standardized **within wave** (z-score using the pooled student distribution of that wave): `civic_z = (x - mean_wave) / sd_wave`. Coefficients are interpreted per one within-wave standard deviation.
+- The primary model uses the first plausible value only; using all available plausible values is a robustness analysis.
+
+**Parental university education (`parents_univ`)**
+
+- Source variables: 1999 BSGEDUM and BSGEDUF (mother's and father's education, combined as the maximum); 2009 HISCED; 2016 S_HISCED; 2022 S_HISCED.
+- Coding: 1 = at least one parent completed university-level education, 0 = otherwise (reference). Wave-specific rule:
+  - 1999: 1 if either parent reports "bachelor's degree" (raw code 7); 0 for raw codes 1–6; 0 (don't know) and 8 set to missing.
+  - 2009: 1 if HISCED = 5 (ISCED 5A or 6); 0 if HISCED = 0–4.
+  - 2016 and 2022: 1 if S_HISCED = 4 (ISCED 6, 7 or 8); 0 if S_HISCED = 0–3.
+  - Codes 7, 8 and 9 (invalid, not administered, omitted) are set to missing in all ICCS waves.
+- No centering.
+
+### Identifiers and design variables
+
+- Country (`idcountry`), wave (`study`), school (`idschool`) and student identifiers.
+- Student total weight: TOTWGT (1999), TOTWGTS (2009, 2016, 2022).
+- Jackknife zones and replicate indicators (JKZONE/JKREP in 1999; JKZONES/JKREPS in ICCS) are retained for robustness analyses.
+
+## Question 3. What is the source of the data included in the analyses?
+
+- IEA CivED 1999 (Grade 8 student files) and ICCS 2009, 2016, 2022 (student files) international databases.
+- SWIID version 9.92 country-year disposable-income Gini estimates.
+- A harmonized pooled student-level file built by the authors' processing scripts (repository link withheld for anonymous review; it will be made public upon publication).
+
+## Question 4. How will these data be obtained?
+
+- CivED/ICCS data are publicly available from the IEA Data Repository:
+  - CivED 1999: https://www.iea.nl/data-tools/repository/cived-1999
+  - ICCS 2009: https://www.iea.nl/data-tools/repository/iccs-2009
+  - ICCS 2016: https://www.iea.nl/data-tools/repository/iccs-2016
+  - ICCS 2022: https://www.iea.nl/data-tools/repository/iccs-2022
+- SWIID data are publicly available at https://fsolt.org/swiid/.
+- Gini values are assigned by a prespecified country-year matching rule (see "Country-Wave Gini Matching Protocol"); no matching decision is made on the basis of substantive results.
+
+## Question 5. Are there any exclusion criteria for the data?
+
+### Observation-level inclusion
+
+The primary analysis of each outcome includes all students with non-missing values on:
+
+- the outcome (`peaceful` or `trafic`);
+- country-year Gini;
+- `female`, `civic_z` and `parents_univ`;
+- the student total weight.
+
+### Exclusion principles
+
+- Countries are not excluded because they are absent in some waves.
+- Country-wave non-participation is treated as structural design imbalance, not ordinary missingness.
+- Countries observed in only one wave remain in the primary model.
+- Country-waves without an exact-year SWIID estimate are excluded from the primary model (currently: Liechtenstein 2009).
+- Sub-national samples (e.g., German federal states in ICCS 2016, Flemish Belgium) are assigned the national Gini value.
+
+## Question 6. What statistical analyses will be performed?
+
+### Data structure
+
+Repeated cross-sectional multilevel data: students nested in country-waves, country-waves nested in countries. Students are not followed across waves. Country participation across waves is unbalanced.
+
+### Primary specification
+
+For each outcome, a two-level linear model with a country random intercept:
+
+$$
+Y_{ict} = \beta_0 + \beta_1 \text{Gini}_{ct} + \beta_2 \text{female}_{ict} + \beta_3 \text{civic\_z}_{ict} + \beta_4 \text{parents\_univ}_{ict} + \gamma_t + u_c + \varepsilon_{ict}
+$$
+
+where $\gamma_t$ are wave fixed effects (1999 reference; dummies for 2009, 2016, 2022) and $u_c \sim N(0, \tau^2)$ is the country random intercept.
+
+### Model constraints
+
+- No within-between decomposition of Gini in the primary model.
+- Waves enter as fixed effects, not as a random year intercept, and year is not specified as a level above country.
+- `gini` is the single contextual term in the primary model.
+
+### Complex survey design and estimator
+
+- Primary estimator: weighted multilevel linear model (pseudo-maximum likelihood) estimated with the R package `WeMix`, with level-1 (student) weights and level-2 (country) weights equal to 1 (countries are not sampled). Student weights are the total student weights rescaled within each country-wave to sum to the country-wave analytic sample size. Standard errors are the cluster-robust (sandwich) standard errors provided by `WeMix`, clustered at the country level.
+- Comparison estimate (reported alongside, not a separate test): the same model without weights, estimated by restricted maximum likelihood with `lme4::lmer`.
+- Jackknife replication cannot be combined with random-effects estimation in available software; design-based jackknife estimates of a single-level model are a robustness analysis. This trade-off is documented here before estimation.
+
+### Software
+
+R (version 4.6) with `WeMix` (primary) and `lme4` (comparison).
+
+## Question 7. What are the criteria for confirming or disconfirming the hypotheses?
+
+- Two-sided tests with alpha = 0.05; 95% confidence intervals for all focal coefficients.
+- H1 is supported if $\beta_1 > 0$ and its 95% CI excludes zero; it is contradicted if $\beta_1 < 0$ with a CI excluding zero; otherwise inconclusive. The same rule applies to H3 (expected $\beta_3 < 0$) and H4 (expected $\beta_4 > 0$). H2 is supported if the CI for $\beta_2$ excludes zero in either direction.
+- Each hypothesis is evaluated separately for `peaceful` and `trafic`.
+- Interpretation also considers effect magnitude (e.g., predicted difference in protest disposition across the observed Gini range), not p-values alone.
+- Effective contextual information is determined by the number of country-waves and countries, not by student count.
+
+## Question 8. Have the analyses been previously validated on a subset of the data?
+
+The data have been harmonized and checked for processing quality (pooled-data construction, coverage and missingness checks). Descriptive analyses were also produced, including country-level bivariate plots of item percentages against Gini by wave. These descriptive checks are acknowledged here and are not confirmatory tests.
+
+A previous conference presentation by the authors (reference withheld for review) used a simpler modelling strategy on the pre-2022 waves (1999, 2009, 2016). Those analyses did not implement the current specification and excluded 2022 data.
+
+No model tuning based on outcome-specific confirmatory results will be performed before the preregistered models are run.
+
+## Question 9. What is already known about the data that could be relevant to the hypotheses?
+
+- The country-wave structure is unbalanced because ICCS participation differs across waves (about 28, 38, 24 and 23 countries in 1999, 2009, 2016 and 2022).
+- Gini varies at the country-year level; the effective contextual sample size is the number of country-waves (roughly 110) and countries.
+- Item and covariate coding differs across waves and requires the explicit harmonization rules described in Question 2.
+- Descriptive plots (Question 8) showed country-level bivariate associations between Gini and protest items; their direction and size will not be used to modify the specification.
+
+## Question 10. Provide a brief timeline for the different stages of the preregistration.
+
+1. Register this plan.
+2. Build the analysis-ready dataset with the harmonization rules stated above.
+3. Run the preregistered primary models for `peaceful` and `trafic`.
+4. Run the preregistered robustness analyses.
+5. Report results, labelling confirmatory and robustness analyses explicitly.
+
+## Prespecified Missing-Data Rules
+
+- Missing outcome: excluded from the corresponding outcome model.
+- Missing Gini: excluded from the primary model.
+- Missing individual covariates: complete-case analysis.
+- Missing weights: excluded from the weighted primary estimator.
+
+## Prespecified Robustness Analyses
+
+A. Restricted sample: countries observed in at least two waves.
+
+B. Within-between decomposition of Gini (country mean and wave deviation), interpreted as exploratory.
+
+C. Ordinal (cumulative logit) mixed model for the 4-category outcomes.
+
+D. All plausible values of civic knowledge combined with Rubin's rules (where available).
+
+E. Design-based single-level model with jackknife replication and country-clustered errors.
+
+F. Additional random intercept for country-wave.
+
+## Country-Wave Gini Matching Protocol
+
+- Source: SWIID v9.92 summary file, `gini_disp`.
+- Harmonization: documented country-name crosswalk (e.g., Russian Federation → Russia; Chinese Taipei → Taiwan; Republic of Korea → Korea; Hong Kong SAR → Hong Kong; England and Flemish Belgium → national values).
+- Year rule: Gini of the ICCS/CivED survey year (1999, 2009, 2016, 2022).
+- Missing Gini: no interpolation or nearest-year substitution in the primary model; affected country-waves are excluded.

@@ -39,13 +39,15 @@ read_swiid_lookup <- function(path = "raw_data/swiid9_92/swiid9_92_summary.csv")
     distinct(country_key, study, .keep_all = TRUE)
 }
 
-clean_item_1_4 <- function(x) {
+# Harmonized direction (all waves): 1 = certainly not, 2 = probably not,
+# 3 = probably, 4 = certainly would do this.
+# CivED 1999 raw items already use this direction; ICCS 2009/2016/2022 raw
+# items are coded 1 = "I would certainly do this" ... 4 = "certainly not",
+# so they are reversed (5 - x).
+clean_item_1_4 <- function(x, study) {
   x <- as.numeric(x)
-  case_when(
-    x %in% 1:4 ~ x,
-    x %in% c(0, 8, 9, 98, 99) ~ NA_real_,
-    TRUE ~ NA_real_
-  )
+  x <- ifelse(x %in% 1:4, x, NA_real_) # 0/7/8/9 non-substantive -> NA
+  ifelse(study == 1999, x, 5 - x)
 }
 
 build_pooled_data <- function(
@@ -73,15 +75,16 @@ build_pooled_data <- function(
     ) |>
     left_join(swiid_lookup, by = c("country_key", "study")) |>
     mutate(
-      contact = clean_item_1_4(contact),
-      peaceful = clean_item_1_4(peaceful),
-      sign = clean_item_1_4(sign),
-      spray = clean_item_1_4(spray),
-      trafic = clean_item_1_4(trafic),
-      occupy = clean_item_1_4(occupy),
+      contact = clean_item_1_4(contact, study),
+      peaceful = clean_item_1_4(peaceful, study),
+      sign = clean_item_1_4(sign, study),
+      spray = clean_item_1_4(spray, study),
+      trafic = clean_item_1_4(trafic, study),
+      occupy = clean_item_1_4(occupy, study),
       civic_test = as.numeric(civic_test),
       weights = as.numeric(weights),
       parents_hisced = as.numeric(parents_hisced),
+      parents_univ = as.numeric(parents_univ),
       gender = as.numeric(gender),
       idstudent = as.numeric(idstudent),
       idschool = as.numeric(idschool),

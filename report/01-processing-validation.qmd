@@ -67,7 +67,7 @@ render_kable_scroll <- function(df, caption, digits = NULL, max_height = "420px"
     as.data.frame(df),
     format = "html",
     caption = caption,
-    digits = digits,
+    digits = if (is.null(digits)) getOption("digits") else digits,
     row.names = FALSE
   )
 
@@ -124,7 +124,7 @@ countries_by_year <- db |>
 ### 3.1 Frequencies for Qualitative Variables
 
 ```{r}
-id_vars <- c("idstudent", "idschool", "idcountry")
+id_vars <- c("idstudent", "idschool", "idcountry", "jkzone", "jkrep")
 
 is_qualitative <- function(x, nm) {
   if (nm %in% id_vars) return(FALSE)
